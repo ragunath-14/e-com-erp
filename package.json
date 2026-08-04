@@ -1,0 +1,21 @@
+{
+  "name": "sparkle-hub-deploy",
+  "version": "1.0.0",
+  "description": "Unified build script for Sparkle Hub Cracker Shop ERP",
+  "main": "backend/index.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "install-all": "cd backend && npm install && cd ../frontend/billing && npm install",
+    "build-frontend": "cd frontend/billing && npm run build",
+    "postinstall": "npm run install-all && npm run build-frontend",
+    "start": "node backend/index.js",
+    "dev": "concurrently \"npm run dev-backend\" \"npm run dev-frontend\"",
+    "dev-backend": "cd backend && npm run dev",
+    "dev-frontend": "cd frontend/billing && npm run dev"
+  },
+  "dependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
