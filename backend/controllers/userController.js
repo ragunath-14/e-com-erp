@@ -10,10 +10,11 @@ function sanitizePages(allowedPages) {
 // List all staff accounts (never returns passwordHash).
 exports.listUsers = async (req, res) => {
   try {
-    const users = await User.find().select('-passwordHash').sort({ createdAt: -1 });
+    const users = await User.find().select('-passwordHash').sort({ createdAt: -1 }).lean();
     res.json(users);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
   }
 };
 
@@ -77,6 +78,7 @@ exports.deleteUser = async (req, res) => {
     if (!user) return res.status(404).json({ error: 'User not found' });
     res.json({ message: 'User deleted' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
   }
 };

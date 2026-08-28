@@ -30,9 +30,12 @@ test.describe('Products / Inventory CRUD', () => {
   });
 
   test('inventory stats and stock filters render', async ({ page }) => {
-    await expect(page.getByRole('button', { name: /all inventory/i })).toBeVisible();
-    await page.getByRole('button', { name: /low stock/i }).click();
-    await page.getByRole('button', { name: /out of stock/i }).click();
-    await page.getByRole('button', { name: /all inventory/i }).click();
+    // Scope to the filter pill row — the topbar also has a "Low Stock Alerts" bell
+    // button whose accessible name would otherwise collide with the /low stock/i filter.
+    const filters = page.locator('.table-card').first();
+    await expect(filters.getByRole('button', { name: /all inventory/i })).toBeVisible();
+    await filters.getByRole('button', { name: '⚠️ Low Stock' }).click();
+    await filters.getByRole('button', { name: '⛔ Out of Stock' }).click();
+    await filters.getByRole('button', { name: /all inventory/i }).click();
   });
 });

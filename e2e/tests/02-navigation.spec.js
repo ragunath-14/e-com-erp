@@ -11,6 +11,7 @@ const routes = [
   { path: '/customers', label: 'Customers' },
   { path: '/pending', label: 'Pending Payments' },
   { path: '/settings', label: 'System Settings' },
+  { path: '/users', label: 'Staff Management' },
 ];
 
 test.describe('Admin navigation smoke test', () => {

@@ -22,7 +22,8 @@ exports.getSettings = async (req, res) => {
     cacheTime = Date.now();
     res.json(setting);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
   }
 };
 

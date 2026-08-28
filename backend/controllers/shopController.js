@@ -8,11 +8,14 @@ exports.getShopProducts = async (req, res) => {
     const { category, search, sort, page = 1, limit = 12 } = req.query;
     const filter = {};
 
-    if (category && category !== 'All') {
+    // category/search must be plain strings — express's query parser turns
+    // bracket syntax (e.g. ?category[$ne]=null) into nested objects, which
+    // would otherwise land straight in a Mongoose filter as an operator.
+    if (category && typeof category === 'string' && category !== 'All') {
       filter.category = category;
     }
 
-    if (search) {
+    if (search && typeof search === 'string') {
       filter.$text = { $search: search };
     }
 
@@ -23,8 +26,8 @@ exports.getShopProducts = async (req, res) => {
     else if (sort === 'newest') sortOption = { createdAt: -1 };
 
     const skip = (Number(page) - 1) * Number(limit);
-    const total = await Product.countDocuments(filter);
-    const [products, setting] = await Promise.all([
+    const [total, products, setting] = await Promise.all([
+      Product.countDocuments(filter),
       Product.find(filter)
         .sort(sortOption)
         .skip(skip)
@@ -44,7 +47,8 @@ exports.getShopProducts = async (req, res) => {
       totalPages: Math.ceil(total / Number(limit)),
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
   }
 };
 
@@ -52,15 +56,12 @@ exports.getShopProducts = async (req, res) => {
 exports.getShopCategories = async (req, res) => {
   try {
     const Category = require('../models/Category');
-    
-    // Get counts from products
-    const productCounts = await Product.aggregate([
-      { $group: { _id: '$category', count: { $sum: 1 } } }
+
+    const [productCounts, categoryMeta] = await Promise.all([
+      Product.aggregate([{ $group: { _id: '$category', count: { $sum: 1 } } }]),
+      Category.find({ active: true }).lean(),
     ]);
 
-    // Get metadata from categories
-    const categoryMeta = await Category.find({ active: true }).lean();
-    
     // Merge
     const result = productCounts.map(pc => {
       const meta = categoryMeta.find(m => m.name === pc._id);
@@ -80,7 +81,8 @@ exports.getShopCategories = async (req, res) => {
 
     res.json(result.sort((a, b) => b.count - a.count));
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
   }
 };
 
@@ -90,7 +92,8 @@ exports.getShopInfo = async (req, res) => {
     const setting = await Setting.findOne().select('shopName address phone email').lean();
     res.json(setting || { shopName: 'Sparkle Crackers Hub', address: '', phone: '', email: '' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
   }
 };
 
@@ -107,6 +110,7 @@ exports.getProductDetail = async (req, res) => {
 
     res.json({ ...product, finalPrice: calcFinalPrice(product, setting) });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
   }
 };

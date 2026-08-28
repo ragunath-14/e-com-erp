@@ -11,7 +11,8 @@ exports.getSales = async (req, res) => {
       .lean();
     res.json(sales);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
   }
 };
 
@@ -82,7 +83,8 @@ exports.getDashboardStats = async (req, res) => {
     const revenue = Math.round(Math.max(0, revenueAgg.length > 0 ? revenueAgg[0].total : 0));
     res.json({ totalProducts, lowStock, totalSales: salesCount, revenue, recentSales });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
   }
 };
 
@@ -113,6 +115,7 @@ exports.deleteSale = async (req, res) => {
     
     res.json({ message: 'Sale deleted, stock restored, and order reverted' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
   }
 };

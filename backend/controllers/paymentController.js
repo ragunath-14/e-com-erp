@@ -5,7 +5,8 @@ exports.getPayments = async (req, res) => {
     const payments = await Payment.find().sort({ createdAt: -1 }).lean();
     res.json(payments);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
   }
 };
 

@@ -20,6 +20,8 @@ const orderSchema = new mongoose.Schema({
   source: { type: String, default: 'Online Store' }
 }, { timestamps: true });
 
+orderSchema.index({ createdAt: -1 });
+
 // Auto-generate human-readable Order ID
 orderSchema.pre('save', async function(next) {
   if (!this.orderId) {

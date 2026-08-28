@@ -2,7 +2,7 @@ const Customer = require('../models/Customer');
 
 exports.getCustomers = async (req, res) => {
   try { res.json(await Customer.find().sort({ name: 1 }).lean()); } 
-  catch (err) { res.status(500).json({ error: err.message }); }
+  catch (err) { console.error(err); res.status(500).json({ error: 'Server error' }); }
 };
 
 exports.createCustomer = async (req, res) => {

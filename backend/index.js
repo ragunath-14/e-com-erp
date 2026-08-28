@@ -3,6 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 
 // ── Route imports ──────────────────────────────────────────────────────────────
 const productRoutes  = require('./routes/productRoutes');
@@ -31,12 +32,58 @@ app.set('trust proxy', 1);
 
 const compression = require('compression');
 app.use(compression());
-// CSP is left off: several pages render inline <style> blocks, which helmet's
-// default policy would block. The rest of helmet's headers (frame options,
-// no-sniff, HSTS, etc.) still apply.
-app.use(helmet({ contentSecurityPolicy: false }));
-app.use(cors());
+
+// Several pages render inline <style> blocks and the app pulls Google Fonts,
+// so those are explicitly allow-listed; everything else defaults to 'self'.
+// This blocks injected <script>/remote content from exfiltrating data even if
+// an XSS bug slips through React's default escaping.
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+      fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+      imgSrc: ["'self'", 'data:', 'https:'],
+      connectSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      baseUri: ["'self'"],
+      formAction: ["'self'"],
+      frameAncestors: ["'none'"],
+      upgradeInsecureRequests: [],
+    },
+  },
+  crossOriginResourcePolicy: { policy: 'same-site' },
+}));
+
+// CORS: same-origin requests (the SPA served by this same app) always pass.
+// Cross-origin browser requests are only allowed from origins explicitly
+// listed in CORS_ORIGIN (comma-separated) or this service's own Render URL —
+// everything else is rejected so a page on another site can't call the API
+// on a logged-in admin's behalf. Wide open in development for convenience.
+const isProd = process.env.NODE_ENV === 'production';
+const allowedOrigins = [process.env.RENDER_EXTERNAL_URL, ...(process.env.CORS_ORIGIN || '').split(',')]
+  .map(s => s && s.trim())
+  .filter(Boolean);
+app.use(cors({
+  origin(origin, callback) {
+    if (!isProd || !origin || allowedOrigins.includes(origin)) return callback(null, true);
+    callback(new Error('Not allowed by CORS'));
+  },
+}));
+
 app.use(express.json({ limit: '1mb' }));
+
+// General abuse/scraping brake across the whole API — generous enough for normal
+// UI usage (dashboard pages fire several requests at once) while capping how much
+// data an automated client can pull per IP. Login has its own, stricter limiter.
+app.use('/api', rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 600,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests. Please try again later.' },
+}));
 
 // ── Database (optimized connection) ────────────────────────────────────────────
 mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/crackers-shop', {
