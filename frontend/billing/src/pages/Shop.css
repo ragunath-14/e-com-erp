@@ -107,6 +107,15 @@
 @keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-18px)}}
 
 @media(max-width:900px){
+  .sn-hide-mobile{display:none}
+  .sn-topbar-inner{gap:14px}
+  .sn-topbar-item{font-size:0.68rem;white-space:nowrap;gap:4px}
+  .sn-navbar-inner{height:64px;padding:0 14px}
+  .sn-brand-icon{font-size:1.7rem}
+  .sn-brand-text{font-size:1.05rem;letter-spacing:0.2px}
+  .sn-brand-sub{display:none}
+  .sn-nav-admin-btn{padding:8px 10px}
+  .sn-nav-cart{margin-right:2px}
   .sn-hero-grid{grid-template-columns:1fr;text-align:center}
   .sn-hero-content{max-width:100%}
   .sn-hero-ctas,.sn-hero-trust{justify-content:center}
@@ -432,7 +441,9 @@
 
 .sn-drawer-header{padding:25px;background:var(--primary);color:var(--white);display:flex;align-items:center;justify-content:space-between}
 .sn-drawer-title{display:flex;align-items:center;gap:15px}
+.sn-drawer-title-stack{display:flex;flex-direction:column;gap:2px;line-height:1.2}
 .sn-drawer-title span{font-weight:900;font-size:1.15rem;text-transform:uppercase;color:var(--secondary)}
+.sn-drawer-subtitle{font-weight:600 !important;font-size:0.7rem !important;text-transform:none !important;opacity:0.65;letter-spacing:0.3px}
 .sn-drawer-subtitle{font-size:0.7rem;font-weight:700;color:rgba(255,255,255,0.7);text-transform:uppercase}
 .sn-drawer-close{background:rgba(255,255,255,0.1);border:none;color:var(--white);width:40px;height:40px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center}
 

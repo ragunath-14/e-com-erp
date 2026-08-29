@@ -95,18 +95,18 @@ const OnlineOrders = () => {
 
   return (
     <div className="container-fluid py-4">
-      <div className="d-flex justify-content-between align-items-center mb-4">
+      <div className="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
         <div>
           <h2 className="fw-bold mb-1">Online Bookings</h2>
           <p className="text-muted small">Manage orders from your online storefront</p>
         </div>
-        <div className="d-flex gap-2">
+        <div className="d-flex flex-column flex-sm-row gap-2">
           <div className="position-relative">
             <Search className="position-absolute top-50 translate-middle-y ms-3 text-muted" size={16} />
-            <input 
-              type="text" 
-              className="form-control ps-5 rounded-pill border-light shadow-sm" 
-              placeholder="Order ID or Name..." 
+            <input
+              type="text"
+              className="form-control ps-5 rounded-pill border-light shadow-sm"
+              placeholder="Order ID or Name..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />

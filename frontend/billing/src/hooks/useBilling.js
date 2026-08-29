@@ -8,6 +8,7 @@ export const useBilling = () => {
   const ap = API_URLS.PRODUCTS;
   const as = API_URLS.SALES;
   const ac = API_URLS.CUSTOMERS;
+  const ay = API_URLS.PAYMENTS;
   const { settings } = useSettings();
   const [products, setProducts] = useState([]);
   const [search, setSearch] = useState('');
@@ -18,6 +19,9 @@ export const useBilling = () => {
   const [discount, setDiscount] = useState({ type: 'percentage', value: 0 });
   const [billType, setBillType] = useState('GST');
   const [cat, setCat] = useState('All');
+  // Lets a cashier finish a bill (stock deducted, receipt printed) while the
+  // customer still owes some or all of it — recorded on the Pending Payments page.
+  const [pendingPayment, setPendingPayment] = useState({ enabled: false, paidNow: '' });
 
   const [lastSale, setLastSale] = useState(null);
 
@@ -71,11 +75,26 @@ export const useBilling = () => {
         onlineOrderId 
       };
       const res = await axios.post(as, saleData);
-      setLastSale(res.data); setCart([]); setCust({ name: '', phone: '', method: 'Cash' }); setDiscount({ type: 'percentage', value: 0 }); f();
+
+      if (pendingPayment.enabled) {
+        const paidNow = Math.min(Math.max(Number(pendingPayment.paidNow) || 0, 0), totalAmount);
+        const status = paidNow <= 0 ? 'Pending' : paidNow >= totalAmount ? 'Completed' : 'Partial';
+        try {
+          await axios.post(ay, {
+            customerName: cust.name, customerPhone: cust.phone, totalAmount,
+            paidAmount: paidNow, status,
+            history: paidNow > 0 ? [{ amount: paidNow, method: cust.method, note: `Billing #${res.data._id}` }] : [],
+          });
+        } catch (payErr) {
+          alert('Sale was completed, but the pending payment record failed to save: ' + (payErr.response?.data?.error || payErr.message));
+        }
+      }
+
+      setLastSale(res.data); setCart([]); setCust({ name: '', phone: '', method: 'Cash' }); setDiscount({ type: 'percentage', value: 0 }); setPendingPayment({ enabled: false, paidNow: '' }); f();
     } catch (err) {
       alert('Sale failed: ' + (err.response?.data?.error || err.message));
     } finally { setLoading(false); }
-  }, [as, billType, cart, cust, discount, f, settings.taxRate]);
+  }, [as, ay, billType, cart, cust, discount, f, pendingPayment, settings.taxRate]);
 
   const quick = useCallback(async (total) => {
     if (!cart.length) return alert('Cart is empty!');
@@ -139,10 +158,11 @@ export const useBilling = () => {
   }, []);
 
   const value = useMemo(() => ({
-    products, search, setSearch, cart, setCart, registered, cust, setCust, 
-    loading, discount, setDiscount, billType, setBillType, cat, setCat, 
+    products, search, setSearch, cart, setCart, registered, cust, setCust,
+    loading, discount, setDiscount, billType, setBillType, cat, setCat,
+    pendingPayment, setPendingPayment,
     add, qty, checkout, quick, regCust, lastSale, setLastSale, f, deleteSale, prefill
-  }), [products, search, cart, registered, cust, loading, discount, billType, cat, add, qty, checkout, quick, regCust, lastSale, f, deleteSale, prefill]);
+  }), [products, search, cart, registered, cust, loading, discount, billType, cat, pendingPayment, add, qty, checkout, quick, regCust, lastSale, f, deleteSale, prefill]);
 
   return value;
 };

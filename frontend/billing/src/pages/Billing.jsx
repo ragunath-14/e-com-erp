@@ -64,7 +64,7 @@ const Billing = () => {
             <CartPanel cart={b.cart} registered={b.registered} onAddQty={b.qty} cust={b.cust} onCustChange={b.setCust} onRemove={(id) => b.setCart(b.cart.filter(i => i.productId !== id))} onNewCust={() => setShowCustModal(true)} />
             <div className="mt-auto px-2">
               <BillingSummary subt={subt} disc={b.discount} onDisc={() => setShowDiscModal(true)} gst={gst} total={total} />
-              <CheckoutActions billType={b.billType} onType={b.setBillType} method={b.cust.method} onMethod={(m) => b.setCust({ ...b.cust, method: m })} onCheckout={() => b.checkout(total)} onQuick={() => b.quick(total)} loading={b.loading} cartLen={b.cart.length} />
+              <CheckoutActions billType={b.billType} onType={b.setBillType} method={b.cust.method} onMethod={(m) => b.setCust({ ...b.cust, method: m })} onCheckout={() => b.checkout(total)} onQuick={() => b.quick(total)} loading={b.loading} cartLen={b.cart.length} pendingPayment={b.pendingPayment} onPendingPaymentChange={b.setPendingPayment} />
             </div>
           </div>
         </div>

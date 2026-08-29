@@ -76,12 +76,12 @@ const Categories = () => {
 
   return (
     <div className="container-fluid py-4">
-      <div className="d-flex justify-content-between align-items-center mb-4">
+      <div className="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-4">
         <div>
           <h2 className="fw-bold mb-1">Product Categories</h2>
           <p className="text-muted small">Manage classifications for your inventory</p>
         </div>
-        <button className="btn btn-primary d-flex align-items-center gap-2 px-4 py-2 rounded-pill shadow-sm" onClick={() => openModal()}>
+        <button className="btn btn-primary d-flex align-items-center justify-content-center gap-2 px-4 py-2 rounded-pill shadow-sm align-self-start" onClick={() => openModal()}>
           <Plus size={18} /> Add Category
         </button>
       </div>

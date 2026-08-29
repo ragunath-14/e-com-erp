@@ -72,14 +72,16 @@ app.use(cors({
   },
 }));
 
-app.use(express.json({ limit: '1mb' }));
+// 4mb headroom for product photos, which arrive as base64 data URIs
+// (client-side compressed to ~900px/JPEG q0.8, but base64 adds ~33% overhead).
+app.use(express.json({ limit: '4mb' }));
 
 // General abuse/scraping brake across the whole API — generous enough for normal
 // UI usage (dashboard pages fire several requests at once) while capping how much
 // data an automated client can pull per IP. Login has its own, stricter limiter.
 app.use('/api', rateLimit({
   windowMs: 15 * 60 * 1000,
-  limit: 600,
+  limit: 2000,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many requests. Please try again later.' },

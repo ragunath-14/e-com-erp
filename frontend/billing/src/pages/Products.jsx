@@ -83,8 +83,8 @@ const Products = () => {
   return (<>
     <ProductHeader search={p.search} onSearch={p.setSearch} products={p.products} onAdd={() => { p.setEditTarget(null); p.setForm(emptyForm); p.setShowProduct(true); }} onBulk={onBulk} />
     <div className="table-card mt-3 shadow-sm border-0">
-      <div className="p-3 border-bottom d-flex justify-content-between align-items-center">
-        <div className="d-flex gap-2">
+      <div className="p-3 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <div className="d-flex flex-wrap gap-2">
           {[
             { key: 'all', label: 'All Inventory' },
             { key: 'low', label: '⚠️ Low Stock' },

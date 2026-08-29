@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import { API_URLS } from '../api/config';
 import { PAGE_DEFS } from '../constants/pages';
 import {
-  Plus, Edit2, Trash2, ShieldCheck, CheckCircle2, AlertCircle, KeyRound
+  Plus, Edit2, Trash2, ShieldCheck, CheckCircle2, AlertCircle, KeyRound, History
 } from 'lucide-react';
 
 const emptyForm = { username: '', password: '', allowedPages: [] };
 
 const Users = () => {
+  const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -98,14 +100,19 @@ const Users = () => {
 
   return (
     <div className="container-fluid py-4">
-      <div className="d-flex justify-content-between align-items-center mb-4">
+      <div className="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-4">
         <div>
           <h2 className="fw-bold mb-1">Staff Management</h2>
           <p className="text-muted small">Create logins and choose which pages each user can see</p>
         </div>
-        <button className="btn btn-primary d-flex align-items-center gap-2 px-4 py-2 rounded-pill shadow-sm" onClick={() => openModal()}>
-          <Plus size={18} /> Add User
-        </button>
+        <div className="d-flex gap-2">
+          <button className="btn btn-light d-flex align-items-center justify-content-center gap-2 px-4 py-2 rounded-pill shadow-sm flex-fill text-nowrap" onClick={() => navigate('/users/logs')}>
+            <History size={18} /> Activity Log
+          </button>
+          <button className="btn btn-primary d-flex align-items-center justify-content-center gap-2 px-4 py-2 rounded-pill shadow-sm flex-fill text-nowrap" onClick={() => openModal()}>
+            <Plus size={18} /> Add User
+          </button>
+        </div>
       </div>
 
       {message && (

@@ -257,7 +257,22 @@ body {
   margin: 0;
 }
 
-.table-responsive { border-radius: 0 0 12px 12px; }
+.table-responsive { border-radius: 0 0 12px 12px; position: relative; }
+
+/* Hints that a wide table has more columns off-screen, since a plain cut edge
+   reads as broken rather than "swipe for more" on a phone/tablet. */
+@media (max-width: 991px) {
+  .table-responsive::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 20px;
+    background: linear-gradient(to right, transparent, rgba(15, 23, 42, 0.08));
+    pointer-events: none;
+  }
+}
 
 .cart-panel-mobile {
   min-height: 80vh;

@@ -20,6 +20,7 @@ const Categories     = lazy(() => import('./pages/Categories'));
 const OnlineOrders   = lazy(() => import('./pages/OnlineOrders'));
 const OnlineBilling  = lazy(() => import('./pages/OnlineBilling'));
 const Users          = lazy(() => import('./pages/Users'));
+const UserActivityLog = lazy(() => import('./pages/UserActivityLog'));
 const Login          = lazy(() => import('./pages/Login'));
 
 const PageLoader = () => (
@@ -72,6 +73,7 @@ const AdminLayout = ({ sidebarOpen, setSidebarOpen }) => (
             <Route path="/online-billing" element={<PageRoute page="online-billing"><OnlineBilling /></PageRoute>} />
             <Route path="/settings"  element={<PageRoute page="settings"><Settings /></PageRoute>} />
             <Route path="/users"     element={<PageRoute adminOnly><Users /></PageRoute>} />
+            <Route path="/users/logs" element={<PageRoute adminOnly><UserActivityLog /></PageRoute>} />
           </Routes>
         </Suspense>
       </div>
