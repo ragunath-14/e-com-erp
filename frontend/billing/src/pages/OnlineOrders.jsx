@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { API_URLS } from '../api/config';
-import { 
-  ShoppingBag, Search, Eye, FileText, CheckCircle, 
-  Clock, XCircle, Truck, Trash2, ChevronRight, Filter, User
+import {
+  ShoppingBag, Search, Eye, FileText, CheckCircle,
+  Clock, XCircle, Truck, Trash2, ChevronRight, Filter, User, AlertTriangle
 } from 'lucide-react';
 import Pagination from '../components/common/Pagination';
 
@@ -66,7 +66,8 @@ const OnlineOrders = () => {
           _id: item.productId,
           name: item.name,
           sellingPrice: item.price,
-          qty: item.qty
+          qty: item.qty,
+          outOfStock: item.outOfStock
         })),
         customerInfo: order.customer
       } 
@@ -143,7 +144,14 @@ const OnlineOrders = () => {
                   ) : (
                     paged.map(o => (
                       <tr key={o._id} className={selectedOrder?._id === o._id ? 'table-primary' : ''} style={{cursor:'pointer'}} onClick={() => setSelectedOrder(o)}>
-                        <td className="ps-4 py-3 fw-bold">{o.orderId}</td>
+                        <td className="ps-4 py-3 fw-bold">
+                          {o.orderId}
+                          {o.items.some(i => i.outOfStock) && (
+                            <span className="badge bg-danger bg-opacity-10 text-danger border border-danger ms-2" title="Order contains an item that was out of stock when booked">
+                              <AlertTriangle size={11} className="me-1" style={{ marginTop: '-2px' }} />OOS
+                            </span>
+                          )}
+                        </td>
                         <td className="py-3">
                           <div className="fw-bold">{o.customer.name}</div>
                           <div className="text-muted small">{o.customer.phone}</div>
@@ -213,7 +221,14 @@ const OnlineOrders = () => {
                     {selectedOrder.items.map((item, idx) => (
                       <div key={idx} className="d-flex justify-content-between p-2 border-bottom last-child-no-border bg-white">
                         <div>
-                          <div className="fw-bold small">{item.name}</div>
+                          <div className="fw-bold small d-flex align-items-center gap-2">
+                            {item.name}
+                            {item.outOfStock && (
+                              <span className="badge bg-danger bg-opacity-10 text-danger border border-danger x-small" title="This item was out of stock when the customer booked it">
+                                <AlertTriangle size={10} className="me-1" style={{ marginTop: '-2px' }} />Out of Stock
+                              </span>
+                            )}
+                          </div>
                           <div className="text-muted x-small">₹{item.price} x {item.qty}</div>
                         </div>
                         <div className="fw-bold small align-self-center">₹{item.total.toFixed(0)}</div>

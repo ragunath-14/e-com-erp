@@ -152,7 +152,8 @@ export const useBilling = () => {
         sellingPrice: item.sellingPrice,
         quantity: item.qty,
         buyingPrice: 0,
-        originalPrice: item.sellingPrice
+        originalPrice: item.sellingPrice,
+        outOfStock: item.outOfStock || false
       })));
     }
   }, []);

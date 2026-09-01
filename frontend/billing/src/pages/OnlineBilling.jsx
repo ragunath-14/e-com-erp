@@ -3,10 +3,10 @@ import axios from 'axios';
 import { API_URLS } from '../api/config';
 import { useBilling } from '../hooks/useBilling';
 import { useSettings } from '../context/SettingsContext';
-import { 
-  ShoppingBag, CheckCircle, Clock, FileText, 
-  User, MapPin, Phone, ArrowRight, Printer, 
-  Search, Filter, CreditCard, Banknote, Trash2
+import {
+  ShoppingBag, CheckCircle, Clock, FileText,
+  User, MapPin, Phone, ArrowRight, Printer,
+  Search, Filter, CreditCard, Banknote, Trash2, AlertTriangle
 } from 'lucide-react';
 import ReceiptModal from '../components/billing/ReceiptModal';
 
@@ -43,7 +43,8 @@ const OnlineBilling = () => {
         _id: i.productId,
         name: i.name,
         sellingPrice: i.price,
-        qty: i.qty
+        qty: i.qty,
+        outOfStock: i.outOfStock
       }))
     });
   };
@@ -107,7 +108,14 @@ const OnlineBilling = () => {
                     style={{ cursor: 'pointer' }}
                   >
                     <div className="d-flex justify-content-between align-items-start mb-2">
-                      <span className="fw-bold text-primary">{o.orderId}</span>
+                      <span className="fw-bold text-primary d-flex align-items-center gap-2">
+                        {o.orderId}
+                        {o.items.some(i => i.outOfStock) && (
+                          <span className="badge bg-danger bg-opacity-10 text-danger border border-danger x-small" title="Order contains an item that was out of stock when booked">
+                            <AlertTriangle size={10} className="me-1" style={{ marginTop: '-2px' }} />OOS
+                          </span>
+                        )}
+                      </span>
                       <div className="d-flex gap-2 align-items-center">
                         <span className="badge bg-warning text-dark x-small rounded-pill">{o.status}</span>
                         <button 
@@ -193,7 +201,14 @@ const OnlineBilling = () => {
                     <tbody>
                       {b.cart.map((item, idx) => (
                         <tr key={idx}>
-                          <td className="ps-3 small fw-bold">{item.name}</td>
+                          <td className="ps-3 small fw-bold">
+                            {item.name}
+                            {item.outOfStock && (
+                              <span className="badge bg-danger bg-opacity-10 text-danger border border-danger x-small ms-2" title="This item was out of stock when the customer booked it">
+                                <AlertTriangle size={10} className="me-1" style={{ marginTop: '-2px' }} />Out of Stock
+                              </span>
+                            )}
+                          </td>
                           <td className="text-center small">{item.quantity}</td>
                           <td className="text-end small">₹{item.sellingPrice}</td>
                           <td className="pe-3 text-end fw-bold small">₹{(item.quantity * item.sellingPrice).toFixed(0)}</td>

@@ -1,9 +1,20 @@
 const Order = require('../models/Order');
+const Product = require('../models/Product');
 
 // Create a new order (from Shop)
 exports.createOrder = async (req, res) => {
   try {
-    const order = new Order(req.body);
+    const items = req.body.items || [];
+    const productIds = items.map(i => i.productId).filter(Boolean);
+    const products = await Product.find({ _id: { $in: productIds } }).select('stock').lean();
+    const stockById = new Map(products.map(p => [p._id.toString(), p.stock]));
+
+    const itemsWithStockFlag = items.map(item => {
+      const stock = stockById.get(String(item.productId));
+      return { ...item, outOfStock: stock === undefined ? false : item.qty > stock };
+    });
+
+    const order = new Order({ ...req.body, items: itemsWithStockFlag });
     const saved = await order.save();
     res.status(201).json(saved);
   } catch (err) {

@@ -175,7 +175,7 @@ const HeroBanner = ({ shopInfo, totalProducts, categories, onAdminClick }) => (
         animate="show"
         variants={staggerContainer}
       >
-        <motion.div variants={fadeUp} className="sn-hero-badge"><Sparkles size={14} /> 2024 Diwali Booking is Open!</motion.div>
+        <motion.div variants={fadeUp} className="sn-hero-badge"><Sparkles size={14} /> {new Date().getFullYear()} Diwali Booking is Open!</motion.div>
         <motion.h1 variants={fadeUp} className="sn-hero-title">
           The Best Crackers <br /> <span>At Lowest Factory Price</span>
         </motion.h1>
@@ -255,7 +255,6 @@ const ProductCard = ({ product, cartItem, onUpdateCart, categories, onInfoClick 
   const hasDiscount = product.hasOffer && product.discountValue > 0;
   const savings = hasDiscount ? (product.sellingPrice - product.finalPrice) : 0;
   const discountPct = hasDiscount ? Math.round((savings / product.sellingPrice) * 100) : 0;
-  const isOutOfStock = product.stock === 0;
   const { ref: cardRef, tilt: cardTilt, handleMove: handleCardMove, resetTilt: resetCardTilt } = useTilt(6, 6);
 
   const categoryIcon = useMemo(() => getCategoryIcon(product.category, categories), [categories, product.category]);
@@ -263,17 +262,13 @@ const ProductCard = ({ product, cartItem, onUpdateCart, categories, onInfoClick 
 
   const handleQtyChange = (val) => {
     const newQty = Math.max(0, val);
-    if (newQty > product.stock) {
-      alert(`Insufficient stock! Only ${product.stock} left.`);
-      return;
-    }
     onUpdateCart(product, newQty);
   };
 
   return (
     <motion.div
       ref={cardRef}
-      className={`sn-product-card-premium ${isOutOfStock ? 'oos' : ''}`}
+      className="sn-product-card-premium"
       initial="hidden"
       whileInView="show"
       viewport={{ once: true, amount: 0.2 }}
@@ -301,7 +296,6 @@ const ProductCard = ({ product, cartItem, onUpdateCart, categories, onInfoClick 
               <div className="sn-img-pattern" />
             </div>
           )}
-          {isOutOfStock && <div className="sn-stock-overlay">Out of Stock</div>}
           {product.category === 'Gift Boxes' && onInfoClick && (
             <button
               type="button"
@@ -327,9 +321,6 @@ const ProductCard = ({ product, cartItem, onUpdateCart, categories, onInfoClick 
         <h4 className="sn-product-title">{product.name}</h4>
         <div className="sn-product-meta">
           <span className="sn-unit-chip">{product.unit || '1 Box'}</span>
-          {product.stock <= 5 && !isOutOfStock && (
-            <span className="sn-stock-warning">Only {product.stock} left!</span>
-          )}
         </div>
 
         <div className="sn-price-container">
@@ -353,10 +344,9 @@ const ProductCard = ({ product, cartItem, onUpdateCart, categories, onInfoClick 
             </div>
           ) : (
             <motion.button
-              whileHover={!isOutOfStock ? { scale: 1.03 } : {}}
-              whileTap={!isOutOfStock ? { scale: 0.96 } : {}}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.96 }}
               className="sn-btn-add-premium"
-              disabled={isOutOfStock}
               onClick={() => handleQtyChange(1)}
             >
               <Plus size={14} /> Add to Basket
@@ -434,10 +424,9 @@ const GiftBoxInfoModal = ({ product, onClose, onUpdateCart, cartItem }) => {
           <button
             type="button"
             className="sn-gift-add-btn"
-            disabled={product.stock === 0}
             onClick={() => { onUpdateCart(product, (cartItem?.qty || 0) + 1); onClose(); }}
           >
-            {product.stock === 0 ? 'Out of Stock' : cartItem ? `In Basket (${cartItem.qty}) — Add One More` : 'Add to Basket'}
+            {cartItem ? `In Basket (${cartItem.qty}) — Add One More` : 'Add to Basket'}
           </button>
         </div>
       </div>

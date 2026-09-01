@@ -12,7 +12,8 @@ const orderSchema = new mongoose.Schema({
     name: { type: String, required: true },
     qty: { type: Number, required: true },
     price: { type: Number, required: true },
-    total: { type: Number, required: true }
+    total: { type: Number, required: true },
+    outOfStock: { type: Boolean, default: false }
   }],
   totalAmount: { type: Number, required: true },
   status: { type: String, enum: ['Pending', 'Confirmed', 'Shipped', 'Delivered', 'Cancelled'], default: 'Pending' },
