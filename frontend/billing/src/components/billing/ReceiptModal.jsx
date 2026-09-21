@@ -1,6 +1,7 @@
 import { createPortal } from 'react-dom';
 import { Printer, CheckCircle2, Trash2 } from 'lucide-react';
 import { useSettings } from '../../context/SettingsContext';
+import { confirmAction } from '../../utils/dialogs';
 
 const inr = (n) => `₹${(n || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
@@ -77,8 +78,8 @@ const ReceiptModal = ({ show, sale, onClose, onDelete }) => {
   if (!show || !sale) return null;
   const handlePrint = () => window.print();
 
-  const handleVoid = () => {
-    if (window.confirm('Void this bill? The record will be deleted and stock will be restored.')) {
+  const handleVoid = async () => {
+    if ((await confirmAction('Void this bill? The record will be deleted and stock will be restored.'))) {
       onDelete(sale._id);
     }
   };

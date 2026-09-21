@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { DollarSign, X } from 'lucide-react';
+import { notify } from '../../utils/dialogs';
 
 const PartialPaymentModal = ({ show, onClose, record, onSave }) => {
   const [amount, setAmount] = useState('');
@@ -12,8 +13,8 @@ const PartialPaymentModal = ({ show, onClose, record, onSave }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!amount || Number(amount) <= 0) return alert('Enter valid amount');
-    if (Number(amount) > remaining) return alert(`Amount cannot exceed remaining balance of ₹${remaining}`);
+    if (!amount || Number(amount) <= 0) return notify('Enter valid amount');
+    if (Number(amount) > remaining) return notify(`Amount cannot exceed remaining balance of ₹${remaining}`);
     onSave(record._id, { amount: Number(amount), method, note });
     setAmount('');
     setNote('');

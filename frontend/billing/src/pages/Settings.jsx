@@ -8,6 +8,7 @@ import GlobalDiscount from '../components/settings/GlobalDiscount';
 import { useSettings } from '../context/SettingsContext';
 import axios from 'axios';
 import { API_URLS } from '../api/config';
+import { notify } from '../utils/dialogs';
 
 const Settings = () => {
   const { settings, setSettings, refreshSettings } = useSettings();
@@ -24,7 +25,7 @@ const Settings = () => {
       setSaved(true); 
       refreshSettings();
       setTimeout(() => setSaved(false), 3000);
-    } catch (err) { alert('Failed to save settings: ' + (err.response?.data?.error || err.message)); }
+    } catch (err) { notify('Failed to save settings: ' + (err.response?.data?.error || err.message)); }
     finally { setLoading(false); }
   };
 

@@ -3,8 +3,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Bell, AlertTriangle, Package, X, ChevronRight, Menu, Download } from 'lucide-react';
 import { API_URLS } from '../api/config';
-import { useSettings } from '../context/SettingsContext';
 import { usePwaInstall } from '../utils/pwaInstall';
+import { notify } from '../utils/dialogs';
 
 const titles = {
   '/':          'Dashboard',
@@ -13,12 +13,16 @@ const titles = {
   '/customers': 'Customers',
   '/pending':   'Payments & Credit',
   '/settings':  'System Settings',
+  '/categories': 'Categories',
+  '/orders':     'Online Orders',
+  '/online-billing': 'Online Billing',
+  '/users':      'Staff Management',
+  '/users/logs': 'Staff Activity Log',
 };
 
 const Topbar = ({ onMenuClick }) => {
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const { settings } = useSettings();
   const { state: installState, install } = usePwaInstall();
   const [lowStockCount, setLowStockCount] = useState(0);
   const [lowStockItems, setLowStockItems] = useState([]);
@@ -101,11 +105,11 @@ const Topbar = ({ onMenuClick }) => {
     navigate('/products');
   };
 
-  const title = titles[pathname] || settings.shopName || 'Dashboard';
+  const title = titles[pathname] || 'Page not found';
 
   const handleInstall = async () => {
     if ((await install()) === 'manual') {
-      alert('To install this app, open your browser menu and choose "Install app" (Chrome / Edge), or on iPhone use Share → Add to Home Screen.');
+      notify('To install this app, open your browser menu and choose "Install app" (Chrome / Edge), or on iPhone use Share → Add to Home Screen.');
     }
   };
 

@@ -7,6 +7,7 @@ import {
   Clock, XCircle, Truck, Trash2, ChevronRight, Filter, User, AlertTriangle
 } from 'lucide-react';
 import Pagination from '../components/common/Pagination';
+import { confirmAction, notify } from '../utils/dialogs';
 
 const OnlineOrders = () => {
   const navigate = useNavigate();
@@ -43,18 +44,18 @@ const OnlineOrders = () => {
         setSelectedOrder({ ...selectedOrder, status });
       }
     } catch (err) {
-      alert('Update failed');
+      notify('Update failed');
     }
   };
 
   const deleteOrder = async (id) => {
-    if (!window.confirm('Delete this order record?')) return;
+    if (!(await confirmAction('Delete this order record?'))) return;
     try {
       await axios.delete(`${API_URLS.BASE}/orders/${id}`);
       fetchOrders();
       setSelectedOrder(null);
     } catch (err) {
-      alert('Delete failed');
+      notify('Delete failed');
     }
   };
 
@@ -116,7 +117,9 @@ const OnlineOrders = () => {
             <option value="All">All Status</option>
             <option value="Pending">Pending</option>
             <option value="Confirmed">Confirmed</option>
+            <option value="Shipped">Shipped</option>
             <option value="Delivered">Delivered</option>
+            <option value="Cancelled">Cancelled</option>
           </select>
         </div>
       </div>

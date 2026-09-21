@@ -11,6 +11,7 @@ import axios from 'axios';
 import { API_URLS } from '../api/config';
 import { useSettings } from '../context/SettingsContext';
 import { calcFinalPrice } from '../utils/pricing';
+import { notify } from '../utils/dialogs';
 
 const emptyForm = { name: '', brand: '', sku: '', category: 'Other', buyingPrice: '', sellingPrice: '', stock: '', lowStockThreshold: 5 };
 
@@ -34,8 +35,10 @@ const Products = () => {
       const thres = Number(i.lowStockThreshold || 5);
       const matchStock = p.stockFilter === 'all' ? true
         : p.stockFilter === 'out' ? sVal === 0
-        : p.stockFilter === 'low' ? sVal > 0 && sVal <= thres
-        : sVal > thres;
+        // Same rule as the dashboard card and the bell: anything under its threshold
+        // (out-of-stock included) is "low"; "In Stock" is the exact complement.
+        : p.stockFilter === 'low' ? sVal < thres
+        : sVal >= thres;
       return matchQ && matchCat && matchStock;
     });
   }, [p.products, p.search, p.filterCat, p.stockFilter]);
@@ -70,9 +73,9 @@ const Products = () => {
         try {
           await axios.post(`${API_URLS.BASE}/products/bulk`, batch);
           p.f(); // Refresh list
-          alert(`Bulk upload complete! ${batch.length} products added.`);
+          notify(`Bulk upload complete! ${batch.length} products added.`);
         } catch (err) {
-          alert('Bulk upload failed: ' + (err.response?.data?.error || err.message));
+          notify('Bulk upload failed: ' + (err.response?.data?.error || err.message));
         }
       }
     }; 
@@ -102,7 +105,7 @@ const Products = () => {
       <ProductTable list={paged} onEdit={openEdit} onPrice={dPrice} onOffer={dOffer} onDelete={dDelete} calcFinal={calc} categories={categories} globalDiscount={settings.globalDiscount} />
       <Pagination total={fs.length} size={size} current={page} onChange={setPage} />
     </div>
-    <ProductFormModal show={p.showProduct} editTarget={p.editTarget} form={p.form} categories={categories} saving={p.saving} onChange={p.setForm} onSave={p.saveProduct} onClose={() => p.setShowProduct(false)} />
+    <ProductFormModal show={p.showProduct} editTarget={p.editTarget} form={p.form} categories={categories} onCategoryAdded={c => setCategories(prev => [...prev, c].sort((a, b) => a.name.localeCompare(b.name)))} saving={p.saving} onChange={p.setForm} onSave={p.saveProduct} onClose={() => p.setShowProduct(false)} />
     <PriceModal show={p.showPrice} name={p.targetName} form={p.priceForm} onChange={p.setPriceForm} onSave={p.savePrice} onClose={() => p.setShowPrice(false)} />
     <OfferModal show={p.showOffer} name={p.targetName} form={p.offerForm} onChange={p.setOfferForm} onSave={p.saveOffer} onRemove={p.removeOffer} onClose={() => p.setShowOffer(false)} />
     <DeleteModal show={p.showDelete} name={p.targetName} onConfirm={p.confirmDelete} onClose={() => p.setShowDelete(false)} />

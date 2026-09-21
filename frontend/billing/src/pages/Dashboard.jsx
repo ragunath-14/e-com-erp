@@ -3,6 +3,7 @@ import axios from 'axios';
 import DashboardStats from '../components/dashboard/DashboardStats';
 import RecentSalesTable from '../components/dashboard/RecentSalesTable';
 import { API_URLS } from '../api/config';
+import { notify } from '../utils/dialogs';
 
 const Dashboard = () => {
   const API = `${API_URLS.SALES}/stats`;
@@ -34,7 +35,7 @@ const Dashboard = () => {
       // Refresh after deletion
       cache.current = { data: null, time: 0 };
       fetchStats();
-    } catch (err) { alert('Error deleting sale'); }
+    } catch (err) { notify('Error deleting sale'); }
   };
 
   if (loading) return (

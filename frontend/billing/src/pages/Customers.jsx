@@ -6,6 +6,7 @@ import Pagination from '../components/common/Pagination';
 import CustomerHistoryModal from '../components/customers/CustomerHistoryModal';
 import axios from 'axios';
 import { API_URLS } from '../api/config';
+import { confirmAction, notify } from '../utils/dialogs';
 
 const Customers = () => {
   const [q, setQ] = useState('');
@@ -32,8 +33,10 @@ const Customers = () => {
   const fs = customers.filter(c => c.name.toLowerCase().includes(q.toLowerCase()) || c.mobile.includes(q));
   const paged = fs.slice((page - 1) * size, page * size);
 
+  const closeModal = () => { setShowModal(false); setForm({ name: '', mobile: '' }); setEditIdx(null); };
+  const openAdd = () => { setEditIdx(null); setForm({ name: '', mobile: '' }); setShowModal(true); };
   const handleEdit = (c) => { setForm(c); setEditIdx(c._id); setShowModal(true); };
-  const handleDelete = async (id) => { if (window.confirm('Delete this customer?')) { await axios.delete(`${ac}/${id}`); f(); } };
+  const handleDelete = async (id) => { if ((await confirmAction('Delete this customer?'))) { await axios.delete(`${ac}/${id}`); f(); } };
 
   const handleSave = async (e) => {
     e.preventDefault();
@@ -48,18 +51,18 @@ const Customers = () => {
       setEditIdx(null); 
       f();
     } catch (err) {
-      alert(err.response?.data?.error || 'Failed to save customer');
+      notify(err.response?.data?.error || 'Failed to save customer');
     }
   };
 
   return (<div className="container-fluid p-0">
-    <CustomerHeader onAdd={() => { setEditIdx(null); setForm({ name: '', mobile: '' }); setShowModal(true); }} />
+    <CustomerHeader onAdd={openAdd} />
     <div className="table-card mt-4 shadow-sm border-0">
-      <CustomerTable list={paged} q={q} onQ={setQ} onAdd={() => setShowModal(true)} onEdit={handleEdit} onDelete={handleDelete} 
+      <CustomerTable list={paged} q={q} onQ={setQ} onAdd={openAdd} onEdit={handleEdit} onDelete={handleDelete} 
         onHistory={(c) => { setSelectedCust(c); setShowHistory(true); }} allCustomers={customers} />
       <Pagination total={fs.length} size={size} current={page} onChange={setPage} />
     </div>
-    <AddCustomerModal show={showModal} onClose={() => setShowModal(false)} form={form} onChange={setForm} onSave={handleSave} edit={editIdx !== null} />
+    <AddCustomerModal show={showModal} onClose={closeModal} form={form} onChange={setForm} onSave={handleSave} edit={editIdx !== null} />
     <CustomerHistoryModal show={showHistory} onClose={() => setShowHistory(false)} customer={selectedCust} sales={sales} />
   </div>);
 };

@@ -6,6 +6,7 @@ import { PAGE_DEFS } from '../constants/pages';
 import {
   Plus, Edit2, Trash2, ShieldCheck, CheckCircle2, AlertCircle, KeyRound, History
 } from 'lucide-react';
+import { confirmAction, notify } from '../utils/dialogs';
 
 const emptyForm = { username: '', password: '', allowedPages: [] };
 
@@ -69,12 +70,12 @@ const Users = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Delete this user? They will no longer be able to log in.')) return;
+    if (!(await confirmAction('Delete this user? They will no longer be able to log in.'))) return;
     try {
       await axios.delete(`${API_URLS.USERS}/${id}`);
       fetchUsers();
     } catch (err) {
-      alert('Delete failed');
+      notify('Delete failed');
     }
   };
 
@@ -83,7 +84,7 @@ const Users = () => {
       await axios.put(`${API_URLS.USERS}/${user._id}`, { active: !user.active });
       fetchUsers();
     } catch (err) {
-      alert('Update failed');
+      notify('Update failed');
     }
   };
 

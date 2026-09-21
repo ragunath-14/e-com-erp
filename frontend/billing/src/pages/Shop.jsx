@@ -14,6 +14,7 @@ import {
   CheckCircle2, Info, Eye, Facebook, Instagram, Twitter, Youtube,
   CreditCard, Truck, ShieldCheck, Heart, Lock, User
 } from 'lucide-react';
+import { notify } from '../utils/dialogs';
 
 /* ── Motion presets ─── */
 const fadeUp = {
@@ -626,7 +627,7 @@ const Shop = () => {
       setShowCheckoutModal(false);
       setCompletedOrderId(savedOrder.orderId);
     } catch (err) {
-      alert('Failed to place order. Please try again.');
+      notify('Failed to place order. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -647,7 +648,7 @@ const Shop = () => {
           )}
         </main>
       </div>
-      <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} cart={cart} onUpdateCart={(p, q) => setCart(prev => { if (q===0) return prev.filter(i=>i._id!==p._id); return prev.map(i=>i._id===p._id?{...i, qty:q}:i); })} onCheckout={() => { if(cart.reduce((a,b)=>a+(b.qty*b.finalPrice),0) < 1500) alert('Min order ₹1500'); else { setIsCartOpen(false); setShowCheckoutModal(true); } }} categories={categories} />
+      <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} cart={cart} onUpdateCart={(p, q) => setCart(prev => { if (q===0) return prev.filter(i=>i._id!==p._id); return prev.map(i=>i._id===p._id?{...i, qty:q}:i); })} onCheckout={() => { if(cart.reduce((a,b)=>a+(b.qty*b.finalPrice),0) < 1500) notify('Min order ₹1500'); else { setIsCartOpen(false); setShowCheckoutModal(true); } }} categories={categories} />
       <GiftBoxInfoModal
         product={infoProduct}
         cartItem={infoProduct ? cart.find(item => item._id === infoProduct._id) : null}
@@ -658,7 +659,7 @@ const Shop = () => {
         <div className="sn-modal-overlay-checkout"><div className="sn-modal-content-checkout"><div className="sn-modal-header-checkout"><h3>Delivery Details</h3><button className="btn-close" onClick={() => setShowCheckoutModal(false)} /></div>
         <form onSubmit={submitOrder} className="sn-checkout-form-checkout">
           <div className="sn-form-group-checkout"><label>Name</label><input required className="form-control" value={customerInfo.name} onChange={e => setCustomerInfo({...customerInfo, name: e.target.value})} /></div>
-          <div className="sn-form-group-checkout"><label>Phone</label><input required type="tel" className="form-control" value={customerInfo.phone} onChange={e => setCustomerInfo({...customerInfo, phone: e.target.value})} /></div>
+          <div className="sn-form-group-checkout"><label>Phone</label><input required type="tel" inputMode="numeric" pattern="[0-9]{10}" maxLength={10} title="Enter a 10-digit mobile number" className="form-control" value={customerInfo.phone} onChange={e => setCustomerInfo({...customerInfo, phone: e.target.value.replace(/[^0-9]/g, '').slice(0, 10)})} /></div>
           <div className="sn-form-group-checkout"><label>Address</label><textarea required className="form-control" value={customerInfo.address} onChange={e => setCustomerInfo({...customerInfo, address: e.target.value})} /></div>
           <button type="submit" className="sn-place-order-final-btn" disabled={submitting}>{submitting ? 'Placing Order...' : 'Place Order'}</button>
         </form></div></div>

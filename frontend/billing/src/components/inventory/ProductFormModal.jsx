@@ -1,6 +1,8 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { API_URLS } from '../../api/config';
 import { PlusCircle, ImagePlus, X, Camera, Upload } from 'lucide-react';
+import { notify } from '../../utils/dialogs';
 
 // Resizes/compresses an uploaded image client-side (max 900px on the long edge,
 // JPEG q0.8) and returns it as a data URI — stored directly in Product.imageUrl.
@@ -27,23 +29,45 @@ function compressImageFile(file, maxDim = 900, quality = 0.8) {
   });
 }
 
-const ProductFormModal = ({ show, editTarget, form, categories = [], saving = false, onChange, onSave, onClose }) => {
-  const navigate = useNavigate();
+const ProductFormModal = ({ show, editTarget, form, categories = [], saving = false, onChange, onSave, onClose, onCategoryAdded }) => {
   const [uploading, setUploading] = React.useState(false);
+  // Inline "new category" so a half-filled product form isn't lost by leaving the page.
+  const [addingCat, setAddingCat] = React.useState(false);
+  const [newCat, setNewCat] = React.useState('');
+  const [catBusy, setCatBusy] = React.useState(false);
+  const [catError, setCatError] = React.useState('');
   const galleryInputRef = React.useRef(null);
   const cameraInputRef = React.useRef(null);
   if (!show) return null;
+
+  const createCategory = async () => {
+    const name = newCat.trim();
+    if (!name || catBusy) return;
+    setCatBusy(true);
+    setCatError('');
+    try {
+      const res = await axios.post(`${API_URLS.BASE}/categories`, { name });
+      onCategoryAdded?.(res.data);
+      onChange({ ...form, category: res.data.name });
+      setAddingCat(false);
+      setNewCat('');
+    } catch (err) {
+      setCatError(err.response?.data?.message || 'Could not add category');
+    } finally {
+      setCatBusy(false);
+    }
+  };
 
   const handleImageFile = async (e) => {
     const file = e.target.files?.[0];
     e.target.value = ''; // allow re-selecting the same file later
     if (!file) return;
-    if (!file.type.startsWith('image/')) return alert('Please choose an image file');
+    if (!file.type.startsWith('image/')) return notify('Please choose an image file');
     setUploading(true);
     try {
       onChange({ ...form, imageUrl: await compressImageFile(file) });
     } catch (err) {
-      alert('Failed to process image: ' + err.message);
+      notify('Failed to process image: ' + err.message);
     } finally {
       setUploading(false);
     }
@@ -77,7 +101,7 @@ const ProductFormModal = ({ show, editTarget, form, categories = [], saving = fa
                       type="button" 
                       className="btn btn-link p-0 small text-decoration-none d-flex align-items-center gap-1"
                       style={{ fontSize: '0.75rem' }}
-                      onClick={() => navigate('/categories')}
+                      onClick={() => { setAddingCat(v => !v); setCatError(''); }}
                     >
                       <PlusCircle size={12} /> New
                     </button>
@@ -87,6 +111,23 @@ const ProductFormModal = ({ show, editTarget, form, categories = [], saving = fa
                     {categories.map(c => <option key={c._id} value={c.name}>{c.name}</option>)}
                     <option value="Other">Other</option>
                   </select>
+                  {addingCat && (
+                    <div className="mt-2">
+                      <div className="input-group input-group-sm">
+                        <input
+                          autoFocus
+                          className="form-control"
+                          placeholder="New category name"
+                          value={newCat}
+                          maxLength={40}
+                          onChange={e => setNewCat(e.target.value)}
+                          onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); createCategory(); } }}
+                        />
+                        <button type="button" className="btn btn-primary" onClick={createCategory} disabled={catBusy || !newCat.trim()}>{catBusy ? '...' : 'Add'}</button>
+                      </div>
+                      {catError && <div className="text-danger extra-small mt-1">{catError}</div>}
+                    </div>
+                  )}
                 </div>
                 <div className="col-6">
                   <label className="form-label small fw-bold text-muted">Cost Price (₹) *</label>

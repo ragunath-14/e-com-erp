@@ -7,11 +7,11 @@ const SettingsContext = createContext();
 
 export const SettingsProvider = ({ children }) => {
   const [settings, setSettings] = useState({
-    shopName: 'Sparkle Crackers Hub',
-    address: '123 Firework Lane, Sivakasi',
-    phone: '+91 98765 43210',
-    email: 'contact@sparkle.com',
-    gstin: '22AAAAA0000A1Z5',
+    shopName: '',
+    address: '',
+    phone: '',
+    email: '',
+    gstin: '',
     taxRate: 18,
     currency: 'INR',
     globalDiscount: { enabled: false, type: 'percentage', value: 0 }

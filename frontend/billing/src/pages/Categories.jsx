@@ -5,6 +5,7 @@ import {
   Plus, Search, Edit2, Trash2, Tag, Info, 
   CheckCircle2, AlertCircle, X, LayoutGrid 
 } from 'lucide-react';
+import { confirmAction, notify } from '../utils/dialogs';
 
 const Categories = () => {
   const [categories, setCategories] = useState([]);
@@ -50,12 +51,14 @@ const Categories = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure? This won\'t delete products, but they will become "Other".')) return;
+    if (!(await confirmAction('Delete this category? Its products are kept and moved to "Other".'))) return;
     try {
-      await axios.delete(`${API_URLS.BASE}/categories/${id}`);
+      const res = await axios.delete(`${API_URLS.BASE}/categories/${id}`);
+      const moved = res.data?.productsMovedToOther || 0;
+      setMessage({ type: 'success', text: moved ? `Category deleted. ${moved} product${moved === 1 ? '' : 's'} moved to "Other".` : 'Category deleted.' });
       fetchCategories();
     } catch (err) {
-      alert('Delete failed');
+      notify(err.response?.data?.message || 'Delete failed');
     }
   };
 

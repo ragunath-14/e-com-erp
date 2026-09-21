@@ -1,4 +1,5 @@
 import { Trash2 } from 'lucide-react';
+import { confirmAction } from '../../utils/dialogs';
 
 const RecentSalesTable = ({ sales, onDelete }) => (
   <div className="table-card"><div className="table-card-header"><h6 className="table-card-title">Recent Sales</h6></div>
@@ -14,7 +15,7 @@ const RecentSalesTable = ({ sales, onDelete }) => (
             <td>
               <div className="d-flex align-items-center gap-2">
                 <button 
-                  onClick={() => { if(window.confirm('⚠️ Are you sure you want to delete this bill?\n\nThis action cannot be undone. All items\' stock levels will be automatically restored.')) onDelete(s._id); }} 
+                  onClick={async () => { if((await confirmAction('⚠️ Are you sure you want to delete this bill?\n\nThis action cannot be undone. All items\' stock levels will be automatically restored.'))) onDelete(s._id); }} 
                   className="btn btn-icon btn-light text-danger border-0 shadow-sm"
                   title="Delete Sale & Restore Stock"
                   style={{ width: '32px', height: '32px', borderRadius: '8px' }}

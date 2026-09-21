@@ -19,17 +19,18 @@ const AddPaymentModal = ({ show, onClose, form, onChange, onSave }) => {
             </div>
             <div className="mb-3">
               <label className="text-muted small mb-1 d-flex align-items-center gap-1"><Phone size={14} /> Phone Number</label>
-              <input required type="tel" className="form-control" placeholder="10-digit mobile..." value={form.customerPhone} onChange={e => onChange({ ...form, customerPhone: e.target.value })} />
+              <input required type="tel" inputMode="numeric" pattern="[0-9]{10}" maxLength={10} title="Enter a 10-digit mobile number" className="form-control" placeholder="10-digit mobile..." value={form.customerPhone} onChange={e => onChange({ ...form, customerPhone: e.target.value.replace(/[^0-9]/g, '').slice(0, 10) })} />
             </div>
             <div className="mb-1">
               <label className="text-muted small mb-1 d-flex align-items-center gap-1"><IndianRupee size={14} /> Total Amount Due</label>
               <input required type="number" className="form-control form-control-lg fw-bold text-primary" placeholder="0.00" value={form.totalAmount} onChange={e => onChange({ ...form, totalAmount: e.target.value })} />
             </div>
           </div>
-          <div className="modal-footer border-0 pt-0 pb-4 justify-content-center">
+          <div className="modal-footer border-0 pt-0 pb-4 justify-content-center flex-column gap-2">
             <button type="submit" className="btn btn-primary w-100 mx-3 rounded-pill fw-bold shadow-sm py-2 d-flex align-items-center justify-content-center gap-2">
               <Save size={18} /> Add Credit Record
             </button>
+            <button type="button" className="btn btn-light w-100 mx-3 rounded-pill" onClick={onClose}>Cancel</button>
           </div>
         </form>
       </div>

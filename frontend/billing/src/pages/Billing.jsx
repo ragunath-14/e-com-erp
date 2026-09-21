@@ -70,7 +70,7 @@ const Billing = () => {
         </div>
       </div>
       <ReceiptModal show={!!b.lastSale} sale={b.lastSale} onClose={() => b.setLastSale(null)} onDelete={b.deleteSale} />
-      <AddCustomerModal show={showCustModal} onClose={() => setShowCustModal(false)} form={custForm} onChange={setCustForm} onSave={saveCust} />
+      <AddCustomerModal show={showCustModal} onClose={() => { setShowCustModal(false); setCustForm({ name: '', mobile: '' }); }} form={custForm} onChange={setCustForm} onSave={saveCust} />
       <BillDiscountModal show={showDiscModal} onClose={() => setShowDiscModal(false)} currentDisc={b.discount} onSave={b.setDiscount} />
     </div>
   );

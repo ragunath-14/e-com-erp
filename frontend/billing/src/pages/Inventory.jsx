@@ -5,6 +5,7 @@ import {
   Search, AlertTriangle, CheckCircle2, X, Layers
 } from 'lucide-react';
 import Pagination from '../components/common/Pagination';
+import { notify } from '../utils/dialogs';
 
 const API = 'http://localhost:5000/api/products';
 const emptyForm = {
@@ -92,7 +93,7 @@ const Inventory = () => {
       }
       setProductModal(false);
       fetchProducts();
-    } catch (err) { alert(err.response?.data?.error || 'Error saving product'); }
+    } catch (err) { notify(err.response?.data?.error || 'Error saving product'); }
   };
 
   // ── Price Modal ──────────────────────────────────────────────────────────
@@ -109,7 +110,7 @@ const Inventory = () => {
       await axios.patch(`${API}/${targetId}/price`, priceForm);
       setPriceModal(false);
       fetchProducts();
-    } catch (err) { alert('Error updating price'); }
+    } catch (err) { notify('Error updating price'); }
   };
 
   // ── Offer Modal ──────────────────────────────────────────────────────────
@@ -136,7 +137,7 @@ const Inventory = () => {
       });
       setOfferModal(false);
       fetchProducts();
-    } catch (err) { alert('Error saving offer'); }
+    } catch (err) { notify('Error saving offer'); }
   };
 
   const removeOffer = async () => {
@@ -146,7 +147,7 @@ const Inventory = () => {
       });
       setOfferModal(false);
       fetchProducts();
-    } catch (err) { alert('Error removing offer'); }
+    } catch (err) { notify('Error removing offer'); }
   };
 
   // ── Delete ───────────────────────────────────────────────────────────────
@@ -161,7 +162,7 @@ const Inventory = () => {
       await axios.delete(`${API}/${targetId}`);
       setDeleteModal(false);
       fetchProducts();
-    } catch (err) { alert('Error deleting product'); }
+    } catch (err) { notify('Error deleting product'); }
   };
 
   const calcFinalPrice = (p) => {

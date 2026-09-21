@@ -13,6 +13,7 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { API_URLS } from '../api/config';
 import Pagination from '../components/common/Pagination';
+import { confirmAction, notify } from '../utils/dialogs';
 
 const Reports = () => {
   const [sales, setSales] = useState([]);
@@ -42,13 +43,13 @@ const Reports = () => {
   };
 
   const handleDeleteSale = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this bill? Stock will be restored and linked online orders will be reset.')) return;
+    if (!(await confirmAction('Are you sure you want to delete this bill? Stock will be restored and linked online orders will be reset.'))) return;
     try {
       await axios.delete(`${API_URLS.SALES}/${id}`);
       fetchSales(); // Refresh list
-      alert('Bill deleted successfully');
+      notify('Bill deleted successfully');
     } catch (err) {
-      alert('Failed to delete bill');
+      notify('Failed to delete bill');
     }
   };
 

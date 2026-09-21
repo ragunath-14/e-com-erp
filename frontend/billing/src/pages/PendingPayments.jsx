@@ -7,6 +7,7 @@ import AddPaymentModal from '../components/payments/AddPaymentModal';
 import PartialPaymentModal from '../components/payments/PartialPaymentModal';
 import Pagination from '../components/common/Pagination';
 import { API_URLS } from '../api/config';
+import { confirmAction, notify } from '../utils/dialogs';
 
 const PendingPayments = () => {
   const [tab, setTab] = useState('pending');
@@ -53,7 +54,7 @@ const PendingPayments = () => {
       setShowAdd(false); 
       setForm({ customerName: '', customerPhone: '', totalAmount: '' });
     } catch (err) {
-      alert('Failed to save payment record');
+      notify('Failed to save payment record');
     }
   };
 
@@ -64,17 +65,17 @@ const PendingPayments = () => {
       setShowPartial(false);
       setSelectedRecord(null);
     } catch (err) {
-      alert('Failed to record payment');
+      notify('Failed to record payment');
     }
   };
 
   const onDelete = async (id) => {
-    if (!window.confirm('Delete this record forever?')) return;
+    if (!(await confirmAction('Delete this record forever?'))) return;
     try {
       await axios.delete(`${API_URLS.PAYMENTS}/${id}`);
       fetchPayments();
     } catch (err) {
-      alert('Delete failed');
+      notify('Delete failed');
     }
   };
 

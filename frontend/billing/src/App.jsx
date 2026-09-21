@@ -1,11 +1,12 @@
 import React, { Suspense, lazy } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './index.css';
 
 import Sidebar from './components/Sidebar';
 import Topbar from './components/Topbar';
 import { SettingsProvider } from './context/SettingsContext';
+import DialogHost from './components/common/DialogHost';
 import { isLoggedIn, hasPageAccess, isAdmin, firstAccessiblePagePath } from './utils/auth';
 
 // ── Lazy-loaded pages (only downloaded when visited) ───────────────────────────
@@ -53,6 +54,15 @@ const PageRoute = ({ page, adminOnly, children }) => {
   );
 };
 
+const NotFound = () => (
+  <div className="d-flex flex-column align-items-center justify-content-center text-center" style={{ height: '60vh' }}>
+    <h1 className="fw-bold display-4 mb-2">404</h1>
+    <h5 className="fw-bold mb-2">Page not found</h5>
+    <p className="text-muted">The page you are looking for doesn't exist or has moved.</p>
+    <Link to={firstAccessiblePagePath() || '/'} className="btn btn-primary rounded-pill px-4">Go to dashboard</Link>
+  </div>
+);
+
 /* Admin layout wrapper (sidebar + topbar) */
 const AdminLayout = ({ sidebarOpen, setSidebarOpen }) => (
   <div className={`app-layout ${sidebarOpen ? 'sidebar-open' : ''}`}>
@@ -74,6 +84,7 @@ const AdminLayout = ({ sidebarOpen, setSidebarOpen }) => (
             <Route path="/settings"  element={<PageRoute page="settings"><Settings /></PageRoute>} />
             <Route path="/users"     element={<PageRoute adminOnly><Users /></PageRoute>} />
             <Route path="/users/logs" element={<PageRoute adminOnly><UserActivityLog /></PageRoute>} />
+            <Route path="*"          element={<NotFound />} />
           </Routes>
         </Suspense>
       </div>
@@ -86,6 +97,7 @@ function App() {
 
   return (
     <SettingsProvider>
+      <DialogHost />
       <Router>
         <Suspense fallback={<PageLoader />}>
           <Routes>

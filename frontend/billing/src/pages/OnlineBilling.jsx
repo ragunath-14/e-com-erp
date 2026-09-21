@@ -9,6 +9,7 @@ import {
   Search, Filter, Smartphone, Banknote, Trash2, AlertTriangle
 } from 'lucide-react';
 import ReceiptModal from '../components/billing/ReceiptModal';
+import { confirmAction, notify } from '../utils/dialogs';
 
 const OnlineBilling = () => {
   const b = useBilling();
@@ -67,13 +68,13 @@ const OnlineBilling = () => {
 
   const deleteOrder = async (e, id) => {
     e.stopPropagation();
-    if (!window.confirm('Are you sure you want to delete this online booking?')) return;
+    if (!(await confirmAction('Are you sure you want to delete this online booking?'))) return;
     try {
       await axios.delete(`${API_URLS.BASE}/orders/${id}`);
       fetchPendingOrders();
       if (selectedOrder?._id === id) setSelectedOrder(null);
     } catch (err) {
-      alert('Failed to delete order');
+      notify('Failed to delete order');
     }
   };
 

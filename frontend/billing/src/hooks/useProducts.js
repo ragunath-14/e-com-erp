@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 
 import { API_URLS } from '../api/config';
+import { notify } from '../utils/dialogs';
 
 const emptyForm = { name: '', brand: '', sku: '', category: 'Sparklers', buyingPrice: '', sellingPrice: '', stock: '', lowStockThreshold: 5, boxContents: '' };
 
@@ -46,7 +47,7 @@ export const useProducts = () => {
     const sPrice = Number(form.sellingPrice || 0);
 
     if (sPrice <= bPrice && sPrice > 0) {
-      alert('WARNING: Selling Price must be higher than Cost Price (to ensure profit)');
+      notify('WARNING: Selling Price must be higher than Cost Price (to ensure profit)');
       return;
     }
 
@@ -69,7 +70,7 @@ export const useProducts = () => {
       setShowProduct(false);
       f();
     } catch (err) {
-      alert('Save failed: ' + (err.response?.data?.error || err.message));
+      notify('Save failed: ' + (err.response?.data?.error || err.message));
     } finally {
       savingRef.current = false;
       setSaving(false);

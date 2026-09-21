@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useSettings } from '../context/SettingsContext';
 import { calcFinalPrice } from '../utils/pricing';
 import { API_URLS } from '../api/config';
+import { notify } from '../utils/dialogs';
 
 export const useBilling = () => {
   const ap = API_URLS.PRODUCTS;
@@ -31,11 +32,11 @@ export const useBilling = () => {
   useEffect(() => { f(); fCust(); }, [f, fCust]);
 
   const add = useCallback((p) => {
-    if (p.stock <= 0) return alert('Out of stock!');
+    if (p.stock <= 0) return notify('Out of stock!');
     const price = calcFinalPrice(p, settings);
     const ok = cart.find(i => i.productId === p._id);
     if (ok) {
-      if (ok.quantity >= p.stock) return alert('No stock!');
+      if (ok.quantity >= p.stock) return notify('No stock!');
       setCart(prev => prev.map(i => i.productId === p._id ? { ...i, quantity: i.quantity + 1 } : i));
     } else {
       setCart(prev => [...prev, { 
@@ -52,14 +53,14 @@ export const useBilling = () => {
     const n = item.quantity + d;
     if (n <= 0) return setCart(prev => prev.filter(i => i.productId !== id));
     const p = products.find(px => px._id === id);
-    if (p && n > p.stock) return alert('No stock!');
+    if (p && n > p.stock) return notify('No stock!');
     setCart(prev => prev.map(i => i.productId === id ? { ...i, quantity: n } : i));
   }, [cart, products]);
 
   const checkout = useCallback(async (total, onlineOrderId = null) => {
-    if (!cust.name) return alert('Customer Name is required!');
-    if (!cust.phone || cust.phone.length < 10) return alert('Valid 10-digit Phone Number is required!');
-    if (!cart.length) return alert('Cart is empty! Add products first.');
+    if (!cust.name) return notify('Customer Name is required!');
+    if (!cust.phone || cust.phone.length < 10) return notify('Valid 10-digit Phone Number is required!');
+    if (!cart.length) return notify('Cart is empty! Add products first.');
     setLoading(true);
     try {
       const rate = Number(settings.taxRate || 18);
@@ -86,18 +87,18 @@ export const useBilling = () => {
             history: paidNow > 0 ? [{ amount: paidNow, method: cust.method, note: `Billing #${res.data._id}` }] : [],
           });
         } catch (payErr) {
-          alert('Sale was completed, but the pending payment record failed to save: ' + (payErr.response?.data?.error || payErr.message));
+          notify('Sale was completed, but the pending payment record failed to save: ' + (payErr.response?.data?.error || payErr.message));
         }
       }
 
       setLastSale(res.data); setCart([]); setCust({ name: '', phone: '', method: 'Cash' }); setDiscount({ type: 'percentage', value: 0 }); setPendingPayment({ enabled: false, paidNow: '' }); f();
     } catch (err) {
-      alert('Sale failed: ' + (err.response?.data?.error || err.message));
+      notify('Sale failed: ' + (err.response?.data?.error || err.message));
     } finally { setLoading(false); }
   }, [as, ay, billType, cart, cust, discount, f, pendingPayment, settings.taxRate]);
 
   const quick = useCallback(async (total) => {
-    if (!cart.length) return alert('Cart is empty!');
+    if (!cart.length) return notify('Cart is empty!');
     setLoading(true);
     try {
       const rate = Number(settings.taxRate || 18);
@@ -114,7 +115,7 @@ export const useBilling = () => {
       const res = await axios.post(as, saleData);
       setLastSale(res.data); setCart([]); setCust({ name: '', phone: '', method: 'Cash' }); setDiscount({ type: 'percentage', value: 0 }); f();
     } catch (err) {
-      alert('Quick Sale failed: ' + (err.response?.data?.error || err.message));
+      notify('Quick Sale failed: ' + (err.response?.data?.error || err.message));
     } finally { setLoading(false); }
   }, [as, billType, cart, cust.method, discount, f, settings.taxRate]);
 
@@ -124,7 +125,7 @@ export const useBilling = () => {
       setRegistered(prev => [...prev, res.data]);
       setCust(prev => ({ ...prev, name: res.data.name, phone: res.data.mobile }));
       return res.data;
-    } catch (err) { alert('Failed to register: ' + (err.response?.data?.error || err.message)); }
+    } catch (err) { notify('Failed to register: ' + (err.response?.data?.error || err.message)); }
   }, [ac]);
 
   const deleteSale = useCallback(async (id) => {
@@ -133,8 +134,8 @@ export const useBilling = () => {
       await axios.delete(`${as}/${id}`);
       f(); // Refresh products
       setLastSale(null);
-      alert('Sale deleted and stock restored.');
-    } catch (err) { alert('Failed to delete sale'); }
+      notify('Sale deleted and stock restored.');
+    } catch (err) { notify('Failed to delete sale'); }
   }, [as, f]);
 
   const prefill = useCallback((data) => {
