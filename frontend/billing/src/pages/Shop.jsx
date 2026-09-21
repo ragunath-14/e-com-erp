@@ -12,7 +12,7 @@ import {
   Sparkles, X, Package, MessageCircle, Star, Flame, Gift, Zap,
   Plus, Minus, ShoppingCart, Trash2, Send, ChevronRight, ArrowLeft,
   CheckCircle2, Info, Eye, Facebook, Instagram, Twitter, Youtube,
-  CreditCard, Truck, ShieldCheck, Heart, Lock, User, Settings
+  CreditCard, Truck, ShieldCheck, Heart, Lock, User
 } from 'lucide-react';
 
 /* ── Motion presets ─── */
@@ -26,6 +26,9 @@ const staggerContainer = {
 };
 
 const SHOP_API = API_URLS.BASE.replace('/api', '/api/shop');
+
+// Number the floating WhatsApp chat button messages (+91 80989 67376).
+const WHATSAPP_NUMBER = '918098967376';
 
 /* rAF-throttled 3D tilt: caps state updates to once per frame instead of once per raw mousemove event */
 const useTilt = (maxX = 16, maxY = 18) => {
@@ -155,7 +158,7 @@ const Hero3DShowcase = () => {
 };
 
 /* ── Hero Banner ─── */
-const HeroBanner = ({ shopInfo, totalProducts, categories, onAdminClick }) => (
+const HeroBanner = ({ shopInfo, totalProducts, categories }) => (
   <section className="sn-hero" id="hero">
     <div className="sn-hero-overlay"></div>
     <div className="sn-hero-sparkle-field">
@@ -187,12 +190,6 @@ const HeroBanner = ({ shopInfo, totalProducts, categories, onAdminClick }) => (
           <a href="#categories" className="sn-hero-btn sn-hero-btn-primary">
             <ShoppingBag size={18} /> Shop Products
           </a>
-          <a href={`https://api.whatsapp.com/send?phone=91${(shopInfo.phone || '9876543210').replace(/[^0-9]/g, '').slice(-10)}&text=Hi, Please send me your price list.`} target="_blank" className="sn-hero-btn sn-hero-btn-outline">
-            <MessageCircle size={18} /> Price List PDF
-          </a>
-          <button onClick={onAdminClick} className="sn-hero-btn sn-hero-btn-admin">
-            <Settings size={18} /> Admin Access
-          </button>
         </motion.div>
         <motion.div variants={fadeUp} className="sn-hero-trust">
           <div className="sn-trust-item"><Flame size={16} /> Eco-Friendly</div>
@@ -511,11 +508,11 @@ const ShopFooter = ({ shopInfo, categories, onAdminClick }) => (
 );
 
 /* ── Floating Action Buttons (WhatsApp + Back to top) ─── */
-const FloatingActions = ({ shopInfo, showBackToTop, onBackToTop }) => (
+const FloatingActions = ({ showBackToTop, onBackToTop }) => (
   <>
     <motion.a
       className="sn-whatsapp-fab"
-      href={`https://api.whatsapp.com/send?phone=91${(shopInfo.phone || '9876543210').replace(/[^0-9]/g, '').slice(-10)}&text=Hi, I have a question about your crackers.`}
+      href={`https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent('Hi, I have a question about your crackers.')}`}
       target="_blank"
       rel="noreferrer"
       initial={{ scale: 0, opacity: 0 }}
@@ -559,6 +556,7 @@ const Shop = () => {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [completedOrderId, setCompletedOrderId] = useState(null);
   const [customerInfo, setCustomerInfo] = useState({ name: '', phone: '', address: '' });
   const [infoProduct, setInfoProduct] = useState(null);
   const onAdminClick = () => {
@@ -624,20 +622,9 @@ const Shop = () => {
       const res = await axios.post(`${API_URLS.BASE}/orders`, orderData);
       const savedOrder = res.data;
 
-      // 2. Open WhatsApp
-      let message = `*✨ NEW DIWALI CRACKER BOOKING ✨*\n`;
-      message += `*Order ID: ${savedOrder.orderId}*\n\n`;
-      message += `*DELIVERY DETAILS*\nCustomer: ${customerInfo.name}\nWhatsApp: ${customerInfo.phone}\nAddress: ${customerInfo.address}\n\n`;
-      message += `*BOOKED ITEMS*\n`;
-      cart.forEach((item, idx) => { message += `${idx + 1}. ${item.name} x ${item.qty} = ₹${(item.qty * item.finalPrice).toFixed(0)}\n`; });
-      message += `\n*TOTAL PAYABLE: ₹${orderData.totalAmount.toFixed(0)}*`;
-      
-      const whatsappUrl = `https://api.whatsapp.com/send?phone=91${(shopInfo.phone || '9876543210').replace(/[^0-9]/g, '').slice(-10)}&text=${encodeURIComponent(message)}`;
-      window.open(whatsappUrl, '_blank');
-      
       setCart([]);
       setShowCheckoutModal(false);
-      alert(`Order Placed Successfully! (ID: ${savedOrder.orderId})`);
+      setCompletedOrderId(savedOrder.orderId);
     } catch (err) {
       alert('Failed to place order. Please try again.');
     } finally {
@@ -648,7 +635,7 @@ const Shop = () => {
   return (
     <div className="sn-shop-page">
       <ShopNavbar shopInfo={shopInfo} cartCount={cart.reduce((a, b) => a + b.qty, 0)} onOpenCart={() => setIsCartOpen(true)} onAdminClick={onAdminClick} />
-      <HeroBanner shopInfo={shopInfo} totalProducts={categories.reduce((a,c)=>a+c.count, 0)} categories={categories.length} onAdminClick={onAdminClick} />
+      <HeroBanner shopInfo={shopInfo} totalProducts={categories.reduce((a,c)=>a+c.count, 0)} categories={categories.length} />
       <div className="sn-notice-bar"><Sparkles size={16} /><span>Diwali Sale Live! Factory wholesale rates. Min order ₹1500.</span></div>
       <GiftHampersSection giftBoxes={giftBoxes} cart={cart} onUpdateCart={updateCart} categories={categories} onInfoClick={setInfoProduct} />
       <div className="sn-main-layout">
@@ -673,12 +660,24 @@ const Shop = () => {
           <div className="sn-form-group-checkout"><label>Name</label><input required className="form-control" value={customerInfo.name} onChange={e => setCustomerInfo({...customerInfo, name: e.target.value})} /></div>
           <div className="sn-form-group-checkout"><label>Phone</label><input required type="tel" className="form-control" value={customerInfo.phone} onChange={e => setCustomerInfo({...customerInfo, phone: e.target.value})} /></div>
           <div className="sn-form-group-checkout"><label>Address</label><textarea required className="form-control" value={customerInfo.address} onChange={e => setCustomerInfo({...customerInfo, address: e.target.value})} /></div>
-          <button type="submit" className="sn-place-order-final-btn" disabled={submitting}>{submitting ? 'Placing Order...' : 'Confirm on WhatsApp'}</button>
+          <button type="submit" className="sn-place-order-final-btn" disabled={submitting}>{submitting ? 'Placing Order...' : 'Place Order'}</button>
         </form></div></div>
       )}
 
+      {completedOrderId && (
+        <div className="sn-modal-overlay-checkout"><div className="sn-modal-content-checkout" style={{ maxWidth: 420, textAlign: 'center' }}>
+          <div style={{ padding: '40px 30px' }}>
+            <CheckCircle2 size={64} color="#16a34a" />
+            <h3 style={{ margin: '16px 0 6px', fontWeight: 800 }}>Order Completed</h3>
+            <p style={{ margin: 0, color: '#475569' }}>Your order has been placed successfully.</p>
+            <p style={{ margin: '10px 0 22px', fontWeight: 700 }}>Order ID: {completedOrderId}</p>
+            <button type="button" className="sn-place-order-final-btn" onClick={() => setCompletedOrderId(null)}>Close</button>
+          </div>
+        </div></div>
+      )}
+
       <ShopFooter shopInfo={shopInfo} categories={categories} onAdminClick={onAdminClick} />
-      <FloatingActions shopInfo={shopInfo} showBackToTop={showBackToTop} onBackToTop={() => window.scrollTo({ top: 0, behavior: 'smooth' })} />
+      <FloatingActions showBackToTop={showBackToTop} onBackToTop={() => window.scrollTo({ top: 0, behavior: 'smooth' })} />
     </div>
   );
 };
