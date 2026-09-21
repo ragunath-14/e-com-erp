@@ -6,7 +6,7 @@ import { useSettings } from '../context/SettingsContext';
 import {
   ShoppingBag, CheckCircle, Clock, FileText,
   User, MapPin, Phone, ArrowRight, Printer,
-  Search, Filter, CreditCard, Banknote, Trash2, AlertTriangle
+  Search, Filter, Smartphone, Banknote, Trash2, AlertTriangle
 } from 'lucide-react';
 import ReceiptModal from '../components/billing/ReceiptModal';
 
@@ -177,11 +177,11 @@ const OnlineBilling = () => {
                         <span className="fw-bold small">Cash</span>
                       </button>
                       <button 
-                        className={`btn flex-grow-1 py-3 rounded-4 d-flex flex-column align-items-center gap-2 ${paymentMethod === 'UPI' ? 'btn-primary shadow' : 'btn-light'}`}
-                        onClick={() => { setPaymentMethod('UPI'); b.setCust({...b.cust, method: 'UPI'}); }}
+                        className={`btn flex-grow-1 py-3 rounded-4 d-flex flex-column align-items-center gap-2 ${paymentMethod === 'GPay' ? 'btn-primary shadow' : 'btn-light'}`}
+                        onClick={() => { setPaymentMethod('GPay'); b.setCust({...b.cust, method: 'GPay'}); }}
                       >
-                        <CreditCard size={24} />
-                        <span className="fw-bold small">UPI / Online</span>
+                        <Smartphone size={24} />
+                        <span className="fw-bold small">GPay</span>
                       </button>
                     </div>
                   </div>

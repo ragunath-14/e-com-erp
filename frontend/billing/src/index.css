@@ -596,7 +596,7 @@ input[type=number] {
 /* ─── Responsive Queries ─────────────────────── */
 @media (max-width: 1024px) {
   :root {
-    --sidebar-width: 200px;
+    --sidebar-width: 220px;
   }
 }
 
@@ -724,20 +724,39 @@ input[type=number] {
   }
 }
 
-/* ─── Print Styles (Clean Receipt) ─────────── */
+/* ─── Print Styles (A4 Invoice) ─────────── */
+.invoice-a4 { display: none; }
+
 @media print {
-  @page { margin: 10mm; }
-  body * { visibility: hidden; }
-  .no-print { display: none !important; }
-  .receipt-box, .receipt-box * { visibility: visible; }
-  .receipt-box {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    margin: 0;
-    padding: 0;
-    border: none !important;
-    box-shadow: none !important;
+  @page { size: A4 portrait; margin: 12mm; }
+  html, body { background: #fff !important; }
+  /* Hide the whole app; only the portal-mounted invoice prints. */
+  #root { display: none !important; }
+  .invoice-a4 {
+    display: block;
+    color: #000;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11pt;
+    line-height: 1.45;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
+  .invoice-a4 .inv-head { display: flex; justify-content: space-between; gap: 24px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+  .invoice-a4 .inv-shop { font-size: 20pt; font-weight: 700; line-height: 1.2; }
+  .invoice-a4 .inv-meta { text-align: right; white-space: nowrap; }
+  .invoice-a4 .inv-title { font-size: 15pt; font-weight: 700; letter-spacing: 1px; margin-bottom: 4px; }
+  .invoice-a4 .inv-billto { margin: 14px 0; }
+  .invoice-a4 .inv-label { font-size: 8.5pt; text-transform: uppercase; letter-spacing: 0.5px; color: #555; }
+  .invoice-a4 .inv-table { width: 100%; border-collapse: collapse; }
+  .invoice-a4 .inv-table thead { display: table-header-group; }
+  .invoice-a4 .inv-table th { background: #eee; text-align: left; }
+  .invoice-a4 .inv-table th, .invoice-a4 .inv-table td { border: 1px solid #999; padding: 6px 8px; }
+  .invoice-a4 .inv-table tr { break-inside: avoid; }
+  .invoice-a4 .inv-table .r { text-align: right; }
+  .invoice-a4 .inv-totals { width: 45%; margin: 14px 0 0 auto; break-inside: avoid; }
+  .invoice-a4 .inv-totals > div { display: flex; justify-content: space-between; padding: 3px 0; }
+  .invoice-a4 .inv-grand { border-top: 2px solid #000; margin-top: 4px; padding-top: 6px !important; font-size: 13pt; font-weight: 700; }
+  .invoice-a4 .inv-foot { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 48px; break-inside: avoid; }
+  .invoice-a4 .inv-sign { border-top: 1px solid #000; padding-top: 4px; min-width: 180px; text-align: center; font-size: 9.5pt; }
+  .invoice-a4 .inv-thanks { text-align: center; margin-top: 28px; font-size: 10pt; color: #444; }
 }

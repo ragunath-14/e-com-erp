@@ -3,13 +3,26 @@ import SuggestionInput from '../common/SuggestionInput';
 import Pagination from '../common/Pagination';
 import { calcFinalPrice } from '../../utils/pricing';
 
-const cats = ['All', 'Sparklers', 'Flower Pots', 'Rockets', 'Ground Chakkars', 'Gift Boxes', 'Novelties', 'Other'];
+// Tabs come from the categories the products actually have, so categories added
+// on the Categories page (or renamed) always show up — a hardcoded list left every
+// product outside it reachable only under "All".
+const buildCats = (products) => {
+  const names = [...new Set(products.map(p => p.category).filter(Boolean))]
+    .sort((a, b) => (a === 'Other') - (b === 'Other') || a.localeCompare(b));
+  return ['All', ...names];
+};
 
 const ProductCatalog = ({ search, onSearch, cat, onCat, filtered, allProducts = [], onAdd, settings }) => {
   const [page, setPage] = React.useState(1);
   const size = 9;
 
+  const cats = React.useMemo(() => buildCats(allProducts), [allProducts]);
+
   React.useEffect(() => { setPage(1); }, [search, cat]);
+  // If the selected category no longer has any products, fall back to All.
+  React.useEffect(() => {
+    if (allProducts.length && cat !== 'All' && !cats.includes(cat)) onCat('All');
+  }, [allProducts.length, cats, cat, onCat]);
   const paged = filtered.slice((page - 1) * size, page * size);
 
   return (

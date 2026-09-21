@@ -10,7 +10,7 @@ const CheckoutActions = ({ billType, onType, method, onMethod, onCheckout, onQui
       </div>
       <div className="flex-fill"><label className="fw-bold small text-muted mb-1 px-1">Payment</label>
         <select className="form-select form-select-sm border-2 fw-bold" value={method} onChange={e => onMethod(e.target.value)}>
-          <option value="Cash">Cash</option><option value="Card">Card</option><option value="UPI">UPI</option><option value="Credit">Credit</option></select>
+          <option value="Cash">Cash</option><option value="GPay">GPay</option></select>
       </div>
     </div>
 

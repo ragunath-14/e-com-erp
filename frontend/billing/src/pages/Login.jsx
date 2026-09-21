@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import axios from 'axios';
 import { Lock, User, LogIn, Sparkles, ArrowLeft, AlertCircle } from 'lucide-react';
 import { API_URLS } from '../api/config';
-import { setToken } from '../utils/auth';
+import { setToken, isLoggedIn } from '../utils/auth';
 
 const Login = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [creds, setCreds] = useState({ username: '', password: '' });
+
+  if (isLoggedIn()) return <Navigate to="/" replace />;
 
   const handleLogin = async (e) => {
     e.preventDefault();

@@ -17,12 +17,20 @@ export const SettingsProvider = ({ children }) => {
     globalDiscount: { enabled: false, type: 'percentage', value: 0 }
   });
 
+  const [loaded, setLoaded] = useState(false);
+
   const fetchSettings = async () => {
     try {
       const res = await axios.get(API_URLS.SETTINGS);
-      if (res.data) setSettings(res.data);
+      if (res.data) { setSettings(res.data); setLoaded(true); }
     } catch (err) { console.error('Failed to fetch settings:', err); }
   };
+
+  // Browser tab / installed-app window title = the shop name from Settings.
+  // Waits for the real settings so the placeholder default never flashes in.
+  useEffect(() => {
+    if (loaded && settings.shopName) document.title = settings.shopName;
+  }, [loaded, settings.shopName]);
 
   useEffect(() => { fetchSettings(); }, []);
 

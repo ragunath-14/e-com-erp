@@ -1,8 +1,10 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Bell, AlertTriangle, Package, X, ChevronRight, Menu } from 'lucide-react';
+import { Bell, AlertTriangle, Package, X, ChevronRight, Menu, Download } from 'lucide-react';
 import { API_URLS } from '../api/config';
+import { useSettings } from '../context/SettingsContext';
+import { usePwaInstall } from '../utils/pwaInstall';
 
 const titles = {
   '/':          'Dashboard',
@@ -16,6 +18,8 @@ const titles = {
 const Topbar = ({ onMenuClick }) => {
   const { pathname } = useLocation();
   const navigate = useNavigate();
+  const { settings } = useSettings();
+  const { state: installState, install } = usePwaInstall();
   const [lowStockCount, setLowStockCount] = useState(0);
   const [lowStockItems, setLowStockItems] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -97,7 +101,13 @@ const Topbar = ({ onMenuClick }) => {
     navigate('/products');
   };
 
-  const title = titles[pathname] || 'Sparkle Hub';
+  const title = titles[pathname] || settings.shopName || 'Dashboard';
+
+  const handleInstall = async () => {
+    if ((await install()) === 'manual') {
+      alert('To install this app, open your browser menu and choose "Install app" (Chrome / Edge), or on iPhone use Share → Add to Home Screen.');
+    }
+  };
 
   return (
     <div className="topbar">
@@ -108,6 +118,16 @@ const Topbar = ({ onMenuClick }) => {
         <span className="topbar-title">{title}</span>
       </div>
       <div className="topbar-right">
+        {installState !== 'installed' && (
+          <button
+            className="btn btn-outline-primary btn-sm rounded-pill d-flex align-items-center gap-2 px-3"
+            onClick={handleInstall}
+            title="Install this app on your device"
+          >
+            <Download size={16} />
+            <span className="d-none d-md-inline fw-bold">Install App</span>
+          </button>
+        )}
         {/* Bell Notification Button */}
         <div style={{ position: 'relative' }}>
           <button

@@ -111,8 +111,54 @@ app.use('/api/payments',   paymentRoutes);
 // ── Static Frontend Serving (PROD) ───────────────────────────────────────────
 if (process.env.NODE_ENV === 'production') {
   const distPath = path.join(__dirname, '../frontend/billing/dist');
-  app.use(express.static(distPath));
-  app.get('*', (req, res) => res.sendFile(path.join(distPath, 'index.html')));
+  const fs = require('fs');
+  const Setting = require('./models/Setting');
+
+  const escapeHtml = (str) => String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const getShopName = async () => {
+    try {
+      const setting = await Setting.findOne().select('shopName').lean();
+      return (setting && setting.shopName && setting.shopName.trim()) || 'Billing';
+    } catch { return 'Billing'; }
+  };
+
+  // Web app manifest — generated so the installed app's name follows the shop
+  // name saved in Settings. Must be registered before express.static.
+  app.get('/manifest.webmanifest', async (req, res) => {
+    const name = await getShopName();
+    res.set('Cache-Control', 'no-cache').type('application/manifest+json').send(JSON.stringify({
+      id: '/',
+      name,
+      short_name: name,
+      description: `${name} — billing, inventory and orders`,
+      start_url: '/login',
+      scope: '/',
+      display: 'standalone',
+      background_color: '#f8fafc',
+      theme_color: '#1e40af',
+      icons: [
+        { src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+        { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+        { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+      ],
+    }));
+  });
+
+  app.use(express.static(distPath, { index: false }));
+
+  // SPA fallback: index.html with <title> set to the shop name from Settings so
+  // the tab (and the installed app window) never shows a hardcoded name.
+  let indexHtml;
+  app.get('*', async (req, res) => {
+    try {
+      indexHtml = indexHtml || fs.readFileSync(path.join(distPath, 'index.html'), 'utf8');
+      const title = escapeHtml(await getShopName());
+      res.set('Cache-Control', 'no-cache').type('html')
+        .send(indexHtml.replace(/<title>[\s\S]*?<\/title>/, () => `<title>${title}</title>`));
+    } catch {
+      res.sendFile(path.join(distPath, 'index.html'));
+    }
+  });
 } else {
   app.get('/', (req, res) => res.send('Backend is running... Use Frontend dev server for UI.'));
 }

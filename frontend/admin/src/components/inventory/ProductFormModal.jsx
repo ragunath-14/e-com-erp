@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PlusCircle, ImagePlus, X } from 'lucide-react';
+import { PlusCircle, ImagePlus, X, Camera, Upload } from 'lucide-react';
 
 // Resizes/compresses an uploaded image client-side (max 900px on the long edge,
 // JPEG q0.8) and returns it as a data URI — stored directly in Product.imageUrl.
@@ -30,6 +30,8 @@ function compressImageFile(file, maxDim = 900, quality = 0.8) {
 const ProductFormModal = ({ show, editTarget, form, categories = [], onChange, onSave, onClose }) => {
   const navigate = useNavigate();
   const [uploading, setUploading] = React.useState(false);
+  const galleryInputRef = React.useRef(null);
+  const cameraInputRef = React.useRef(null);
   if (!show) return null;
 
   const handleImageFile = async (e) => {
@@ -50,13 +52,15 @@ const ProductFormModal = ({ show, editTarget, form, categories = [], onChange, o
   return (
     <div className="modal show d-block" style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(2px)' }}>
       <div className="modal-dialog modal-dialog-centered">
-        <div className="modal-content border-0 shadow-lg rounded-4">
+        {/* Capped to the visible viewport with a scrolling body so the footer
+            buttons stay reachable on phones (dvh accounts for the mobile URL bar). */}
+        <div className="modal-content border-0 shadow-lg rounded-4" style={{ maxHeight: 'calc(100dvh - 1.5rem)' }}>
           <div className="modal-header border-light">
             <h6 className="modal-title fw-bold text-primary">{editTarget ? 'Edit Product' : 'Add New Product'}</h6>
             <button className="btn-close" onClick={onClose} />
           </div>
-          <form onSubmit={onSave}>
-            <div className="modal-body px-4 py-3">
+          <form onSubmit={onSave} className="d-flex flex-column" style={{ minHeight: 0 }}>
+            <div className="modal-body px-3 px-sm-4 py-3" style={{ overflowY: 'auto' }}>
               <div className="row g-3">
                 <div className="col-12">
                   <label className="form-label small fw-bold text-muted">Product Name *</label>
@@ -94,27 +98,49 @@ const ProductFormModal = ({ show, editTarget, form, categories = [], onChange, o
                 </div>
                 <div className="col-12">
                   <label className="form-label small fw-bold text-muted">Product Image</label>
-                  <div className="d-flex align-items-center gap-3">
+                  <div className="d-flex align-items-start gap-3">
                     {form.imageUrl ? (
-                      <div className="position-relative">
-                        <img src={form.imageUrl} alt="Product preview" className="rounded-3 border" style={{ width: 64, height: 64, objectFit: 'cover' }} />
+                      <div className="position-relative flex-shrink-0">
+                        <img src={form.imageUrl} alt="Product preview" className="rounded-3 border" style={{ width: 80, height: 80, objectFit: 'cover' }} />
                         <button
                           type="button"
                           className="btn btn-danger btn-sm rounded-circle p-0 d-flex align-items-center justify-content-center"
-                          style={{ width: 20, height: 20, position: 'absolute', top: -6, right: -6 }}
+                          style={{ width: 22, height: 22, position: 'absolute', top: -7, right: -7 }}
                           onClick={() => onChange({ ...form, imageUrl: '' })}
                           title="Remove image"
                         >
-                          <X size={12} />
+                          <X size={13} />
                         </button>
                       </div>
                     ) : (
-                      <div className="rounded-3 border d-flex align-items-center justify-content-center text-muted" style={{ width: 64, height: 64 }}>
-                        <ImagePlus size={22} />
+                      <div className="rounded-3 border d-flex align-items-center justify-content-center text-muted flex-shrink-0" style={{ width: 80, height: 80 }}>
+                        <ImagePlus size={24} />
                       </div>
                     )}
-                    <div className="flex-grow-1">
-                      <input type="file" accept="image/*" className="form-control form-control-sm rounded-3" onChange={handleImageFile} disabled={uploading} />
+                    <div className="flex-grow-1" style={{ minWidth: 0 }}>
+                      {/* Two hidden inputs: the plain one opens the gallery/file picker,
+                          the one with `capture` opens the camera directly on phones
+                          (desktop browsers ignore `capture` and show the file picker). */}
+                      <input ref={galleryInputRef} type="file" accept="image/*" className="d-none" onChange={handleImageFile} disabled={uploading} />
+                      <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="d-none" onChange={handleImageFile} disabled={uploading} />
+                      <div className="d-flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          className="btn btn-outline-primary btn-sm rounded-pill px-3 d-flex align-items-center justify-content-center gap-2 flex-fill"
+                          onClick={() => galleryInputRef.current?.click()}
+                          disabled={uploading}
+                        >
+                          <Upload size={15} /> Upload
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-outline-primary btn-sm rounded-pill px-3 d-flex align-items-center justify-content-center gap-2 flex-fill"
+                          onClick={() => cameraInputRef.current?.click()}
+                          disabled={uploading}
+                        >
+                          <Camera size={15} /> Take Photo
+                        </button>
+                      </div>
                       <div className="form-text extra-small">
                         {uploading ? 'Processing image...' : `Optional — shown on the shop page and here. Left blank, a ${form.category || 'category'}-relevant icon is used instead.`}
                       </div>

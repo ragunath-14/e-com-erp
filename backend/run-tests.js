@@ -52,7 +52,7 @@ async function runTests() {
     // 5. TEST BILLING
     console.log('\n[5/5] Testing Billing & Stock Deduction...');
     const saleData = {
-      customerName: foundOrder.customer.name, customerPhone: foundOrder.customer.phone, paymentMethod: 'UPI',
+      customerName: foundOrder.customer.name, customerPhone: foundOrder.customer.phone, paymentMethod: 'GPay',
       products: [{ productId: foundOrder.items[0].productId, name: foundOrder.items[0].name, sellingPrice: foundOrder.items[0].price, quantity: foundOrder.items[0].qty, buyingPrice: prodData.buyingPrice, originalPrice: prodData.sellingPrice }],
       totalAmount: 750, billType: 'Estimate', discount: { type: 'percentage', value: 0 }, gst: 0, subt: 750, taxRate: 0
     };

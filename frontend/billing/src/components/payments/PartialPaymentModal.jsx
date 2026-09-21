@@ -63,8 +63,7 @@ const PartialPaymentModal = ({ show, onClose, record, onSave }) => {
                 <label className="form-label small fw-bold">Payment Method</label>
                 <select className="form-select bg-light border-0" value={method} onChange={e => setMethod(e.target.value)}>
                   <option>Cash</option>
-                  <option>UPI / Online</option>
-                  <option>Bank Transfer</option>
+                  <option>GPay</option>
                 </select>
               </div>
 

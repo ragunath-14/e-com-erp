@@ -83,13 +83,13 @@ const Sidebar = ({ onLogoClick }) => {
 
       <div className="sidebar-footer">
         {admin && (
-          <NavLink to="/users" className="nav-link-item mb-2">
+          <NavLink to="/users" className="nav-link-item">
             <UserCog size={17} />
             <span>Staff Management</span>
           </NavLink>
         )}
         {hasPageAccess('settings') && (
-          <NavLink to="/settings" className="nav-link-item mb-2">
+          <NavLink to="/settings" className="nav-link-item">
             <Settings size={17} />
             <span>System Settings</span>
           </NavLink>
@@ -101,11 +101,21 @@ const Sidebar = ({ onLogoClick }) => {
       </div>
 
       <style>{`
+        /* Single source of truth for sidebar item styling (overrides index.css). */
+        .sidebar-nav {
+          overflow-x: hidden;
+          scrollbar-width: thin;
+          scrollbar-color: rgba(255,255,255,0.18) transparent;
+        }
+        .sidebar-nav::-webkit-scrollbar { width: 6px; }
+        .sidebar-nav::-webkit-scrollbar-track { background: transparent; }
+        .sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 3px; }
+        .sidebar-nav::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.32); }
         .sidebar-section {
-          margin-bottom: 1.5rem;
+          margin-bottom: 0.75rem;
         }
         .section-header {
-          padding: 0 1.25rem 0.5rem;
+          padding: 0 0.85rem 0.4rem;
           font-size: 0.65rem;
           font-weight: 800;
           color: #94a3b8;
@@ -115,34 +125,41 @@ const Sidebar = ({ onLogoClick }) => {
         .nav-link-item {
           display: flex;
           align-items: center;
-          padding: 0.75rem 1.25rem;
+          gap: 12px;               /* the only icon→label spacing, so every label lines up */
+          padding: 0.55rem 0.85rem;
           color: #cbd5e1;
           text-decoration: none;
           transition: all 0.2s;
-          border-radius: 0;
-          margin: 0;
+          border-radius: 8px;
+          margin: 0 0 2px;
           position: relative;
         }
         .nav-link-item:hover {
-          background: rgba(255,255,255,0.05);
+          background: rgba(255,255,255,0.06);
           color: #fff;
         }
         .nav-link-item.active {
-          background: rgba(37, 99, 235, 0.15);
+          background: rgba(37, 99, 235, 0.18);
           color: #60a5fa;
-          border-right: 3px solid #3b82f6;
+          box-shadow: inset 3px 0 0 #3b82f6;
         }
         .nav-icon {
-          margin-right: 0.75rem;
           display: flex;
           align-items: center;
+          flex-shrink: 0;
         }
         .nav-label {
           flex: 1;
+          min-width: 0;
           font-size: 0.85rem;
           font-weight: 500;
+          white-space: nowrap;      /* never wrap "Pending Payments" onto two lines */
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
         .nav-chevron {
+          position: absolute;       /* out of the flow so it doesn't steal label width */
+          right: 10px;
           opacity: 0;
           transition: opacity 0.2s;
         }
@@ -154,9 +171,11 @@ const Sidebar = ({ onLogoClick }) => {
         }
         .sidebar-footer {
           margin-top: auto;
-          padding-bottom: 1rem;
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          padding: 0.5rem 10px 0.75rem;
           border-top: 1px solid rgba(255,255,255,0.1);
-          padding-top: 1rem;
         }
       `}</style>
     </div>
