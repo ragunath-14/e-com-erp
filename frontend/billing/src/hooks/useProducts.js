@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 
 import { API_URLS } from '../api/config';
@@ -31,12 +31,17 @@ export const useProducts = () => {
   const [offerForm, setOfferForm] = useState(emptyOffer);
   const [targetId, setTargetId] = useState(null);
   const [targetName, setTargetName] = useState('');
+  // Blocks double submits: the modal only closes once the server replies, which is
+  // slow on a cold free-tier server, and every extra Save tap created another product.
+  const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
 
   const f = () => { setLoading(true); axios.get(API).then(r => setProducts(r.data)).finally(() => setLoading(false)); };
   useEffect(() => { f(); }, []);
 
   const saveProduct = async (e) => {
     e.preventDefault();
+    if (savingRef.current) return;
     const bPrice = Number(form.buyingPrice || 0);
     const sPrice = Number(form.sellingPrice || 0);
 
@@ -45,6 +50,8 @@ export const useProducts = () => {
       return;
     }
 
+    savingRef.current = true;
+    setSaving(true);
     try {
       const payload = {
         ...form,
@@ -63,6 +70,9 @@ export const useProducts = () => {
       f();
     } catch (err) {
       alert('Save failed: ' + (err.response?.data?.error || err.message));
+    } finally {
+      savingRef.current = false;
+      setSaving(false);
     }
   };
   const savePrice = (e) => { e.preventDefault(); axios.patch(`${API}/${targetId}/price`, { buyingPrice: Number(priceForm.buyingPrice), sellingPrice: Number(priceForm.sellingPrice) }).then(() => { setShowPrice(false); f(); }); };
@@ -74,6 +84,6 @@ export const useProducts = () => {
     products, tab, setTab, search, setSearch, filterCat, setFilterCat, stockFilter, setStockFilter, loading,
     showProduct, setShowProduct, showPrice, setShowPrice, showOffer, setShowOffer, showDelete, setShowDelete,
     editTarget, setEditTarget, form, setForm, priceForm, setPriceForm, offerForm, setOfferForm,
-    targetId, setTargetId, targetName, setTargetName, f, saveProduct, savePrice, saveOffer, removeOffer, confirmDelete
+    targetId, setTargetId, targetName, setTargetName, saving, f, saveProduct, savePrice, saveOffer, removeOffer, confirmDelete
   };
 };

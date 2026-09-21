@@ -27,7 +27,7 @@ function compressImageFile(file, maxDim = 900, quality = 0.8) {
   });
 }
 
-const ProductFormModal = ({ show, editTarget, form, categories = [], onChange, onSave, onClose }) => {
+const ProductFormModal = ({ show, editTarget, form, categories = [], saving = false, onChange, onSave, onClose }) => {
   const navigate = useNavigate();
   const [uploading, setUploading] = React.useState(false);
   const galleryInputRef = React.useRef(null);
@@ -172,7 +172,9 @@ const ProductFormModal = ({ show, editTarget, form, categories = [], onChange, o
             </div>
             <div className="modal-footer border-light">
               <button type="button" className="btn btn-light rounded-pill px-4" onClick={onClose}>Cancel</button>
-              <button type="submit" className="btn btn-primary rounded-pill px-4 fw-bold">{editTarget ? 'Update Product' : 'Save Product'}</button>
+              <button type="submit" className="btn btn-primary rounded-pill px-4 fw-bold" disabled={saving || uploading}>
+                {saving ? 'Saving...' : (editTarget ? 'Update Product' : 'Save Product')}
+              </button>
             </div>
           </form>
         </div>

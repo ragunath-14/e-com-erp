@@ -102,7 +102,7 @@ const Products = () => {
       <ProductTable list={paged} onEdit={openEdit} onPrice={dPrice} onOffer={dOffer} onDelete={dDelete} calcFinal={calc} categories={categories} globalDiscount={settings.globalDiscount} />
       <Pagination total={fs.length} size={size} current={page} onChange={setPage} />
     </div>
-    <ProductFormModal show={p.showProduct} editTarget={p.editTarget} form={p.form} categories={categories} onChange={p.setForm} onSave={p.saveProduct} onClose={() => p.setShowProduct(false)} />
+    <ProductFormModal show={p.showProduct} editTarget={p.editTarget} form={p.form} categories={categories} saving={p.saving} onChange={p.setForm} onSave={p.saveProduct} onClose={() => p.setShowProduct(false)} />
     <PriceModal show={p.showPrice} name={p.targetName} form={p.priceForm} onChange={p.setPriceForm} onSave={p.savePrice} onClose={() => p.setShowPrice(false)} />
     <OfferModal show={p.showOffer} name={p.targetName} form={p.offerForm} onChange={p.setOfferForm} onSave={p.saveOffer} onRemove={p.removeOffer} onClose={() => p.setShowOffer(false)} />
     <DeleteModal show={p.showDelete} name={p.targetName} onConfirm={p.confirmDelete} onClose={() => p.setShowDelete(false)} />
