@@ -15,6 +15,7 @@ import {
   CreditCard, Truck, ShieldCheck, Heart, Lock, User
 } from 'lucide-react';
 import { notify } from '../utils/dialogs';
+import { getOfferInfo, formatINR } from '../utils/offer';
 
 /* ── Motion presets ─── */
 const fadeUp = {
@@ -211,6 +212,30 @@ const HeroBanner = ({ shopInfo, totalProducts, categories }) => (
   </section>
 );
 
+/* ── Offer Banner (headline offer, derived from the live catalog) ─── */
+const OfferBanner = ({ products }) => {
+  const offers = products.map(getOfferInfo).filter(o => o.hasOffer);
+  if (!offers.length) return null;
+  const maxPct = Math.max(...offers.map(o => o.pct));
+
+  return (
+    <section className="sn-offer-banner">
+      <div className="sn-offer-banner-badge">
+        <span className="sn-offer-banner-upto">UP TO</span>
+        <span className="sn-offer-banner-pct">{maxPct}%</span>
+        <span className="sn-offer-banner-off">OFF</span>
+      </div>
+      <div className="sn-offer-banner-text">
+        <h2>{maxPct}% Discount Offer on MRP</h2>
+        <p>
+          <strong>{offers.length} products</strong> on offer — every product shows its MRP, the offer price
+          you pay and how much you save.
+        </p>
+      </div>
+    </section>
+  );
+};
+
 /* ── Category Sidebar Filter ─── */
 const CategorySidebar = ({ categories, active, onChange, totalCount }) => (
   <motion.aside
@@ -250,9 +275,7 @@ const CategorySidebar = ({ categories, active, onChange, totalCount }) => (
 
 /* ── Amazon Style Product Card ─── */
 const ProductCard = ({ product, cartItem, onUpdateCart, categories, onInfoClick }) => {
-  const hasDiscount = product.hasOffer && product.discountValue > 0;
-  const savings = hasDiscount ? (product.sellingPrice - product.finalPrice) : 0;
-  const discountPct = hasDiscount ? Math.round((savings / product.sellingPrice) * 100) : 0;
+  const offer = getOfferInfo(product);
   const { ref: cardRef, tilt: cardTilt, handleMove: handleCardMove, resetTilt: resetCardTilt } = useTilt(6, 6);
 
   const categoryIcon = useMemo(() => getCategoryIcon(product.category, categories), [categories, product.category]);
@@ -275,12 +298,12 @@ const ProductCard = ({ product, cartItem, onUpdateCart, categories, onInfoClick 
       onMouseLeave={resetCardTilt}
       style={{ rotateX: cardTilt.x, rotateY: cardTilt.y, transformPerspective: 900 }}
     >
-      {hasDiscount && (
+      {offer.hasOffer && (
         <div className="sn-badge-discount">
-          <Zap size={10} fill="currentColor" /> {discountPct}% OFF
+          <Zap size={10} fill="currentColor" /> {offer.pct}% OFF
         </div>
       )}
-      
+
       <div className="sn-card-top">
         <div className="sn-category-tag">
           {categoryIcon} {product.category}
@@ -322,13 +345,23 @@ const ProductCard = ({ product, cartItem, onUpdateCart, categories, onInfoClick 
         </div>
 
         <div className="sn-price-container">
+          {offer.hasOffer && (
+            <div className="sn-price-strike">
+              <span className="sn-mrp-label">MRP</span>
+              <span className="sn-mrp">₹{formatINR(offer.mrp)}</span>
+            </div>
+          )}
           <div className="sn-price-main">
             <span className="sn-currency">₹</span>
-            <span className="sn-amount">{product.finalPrice.toFixed(0)}</span>
+            <span className="sn-amount">{formatINR(offer.price)}</span>
+            {offer.hasOffer && <span className="sn-offer-price-label">Offer Price</span>}
           </div>
-          {hasDiscount && (
-            <div className="sn-price-strike">
-              <span className="sn-mrp">₹{product.sellingPrice.toFixed(0)}</span>
+          {offer.hasOffer && (
+            <div className="sn-offer-box">
+              <div className="sn-offer-head"><Flame size={12} /> {offer.label}</div>
+              <div className="sn-offer-detail">
+                Flat <strong>{offer.pct}% OFF</strong> · You save <strong>₹{formatINR(offer.savings)}</strong>
+              </div>
             </div>
           )}
         </div>
@@ -393,7 +426,7 @@ const GiftHampersSection = ({ giftBoxes, cart, onUpdateCart, categories, onInfoC
 /* ── Gift Box Info Modal (lists everything inside the box) ─── */
 const GiftBoxInfoModal = ({ product, onClose, onUpdateCart, cartItem }) => {
   if (!product) return null;
-  const hasDiscount = product.hasOffer && product.discountValue > 0;
+  const comboPrice = getOfferInfo(product).price;
   const contents = product.boxContents || [];
 
   return (
@@ -404,12 +437,6 @@ const GiftBoxInfoModal = ({ product, onClose, onUpdateCart, cartItem }) => {
           <button className="btn-close" onClick={onClose} />
         </div>
         <div className="sn-gift-info-body">
-          <div className="sn-gift-info-price">
-            <span className="sn-currency">₹</span>
-            <span className="sn-amount">{product.finalPrice.toFixed(0)}</span>
-            {hasDiscount && <span className="sn-mrp">₹{product.sellingPrice.toFixed(0)}</span>}
-          </div>
-
           <h5 className="sn-gift-info-subhead">What's Inside</h5>
           {contents.length > 0 ? (
             <ul className="sn-gift-contents-list">
@@ -418,6 +445,12 @@ const GiftBoxInfoModal = ({ product, onClose, onUpdateCart, cartItem }) => {
           ) : (
             <p className="sn-gift-contents-empty">Contents list not available for this box yet — please contact us for details.</p>
           )}
+
+          <div className="sn-gift-info-price">
+            <span className="sn-gift-info-price-label">Combo Price</span>
+            <span className="sn-currency">₹</span>
+            <span className="sn-amount">{formatINR(comboPrice)}</span>
+          </div>
 
           <button
             type="button"
@@ -468,7 +501,10 @@ const CartDrawer = ({ isOpen, onClose, cart, onUpdateCart, onCheckout, categorie
                   <div className="sn-cart-item-main">
                     <div className="sn-cart-item-header"><span className="sn-item-name">{item.name}</span><button className="sn-item-remove-btn" onClick={() => onUpdateCart(item, 0)}><X size={14} /></button></div>
                     <div className="sn-cart-item-footer">
-                      <div className="sn-price-row"><span className="sn-price-final">₹{item.finalPrice.toFixed(0)}</span></div>
+                      <div className="sn-price-row">
+                        {item.finalPrice < item.sellingPrice && <span className="sn-price-mrp">₹{formatINR(item.sellingPrice)}</span>}
+                        <span className="sn-price-final">₹{formatINR(item.finalPrice)}</span>
+                      </div>
                       <div className="sn-qty-control-premium"><button onClick={() => onUpdateCart(item, item.qty - 1)}><Minus size={10} /></button><span>{item.qty}</span><button onClick={() => onUpdateCart(item, item.qty + 1)}><Plus size={10} /></button></div>
                     </div>
                   </div>
@@ -479,7 +515,15 @@ const CartDrawer = ({ isOpen, onClose, cart, onUpdateCart, onCheckout, categorie
         </div>
         {cart.length > 0 && (
           <div className="sn-drawer-footer-premium">
-            <div className="sn-footer-summary-premium"><div className="sn-sum-row sn-sum-grand"><span>Grand Total</span><span>₹{totalPrice.toFixed(0)}</span></div></div>
+            <div className="sn-footer-summary-premium">
+              {totalSavings > 0 && (
+                <>
+                  <div className="sn-sum-row"><span>Total MRP</span><span className="sn-sum-mrp">₹{formatINR(totalOriginal)}</span></div>
+                  <div className="sn-sum-row sn-sum-savings"><span>Offer Savings</span><span>− ₹{formatINR(totalSavings)}</span></div>
+                </>
+              )}
+              <div className="sn-sum-row sn-sum-grand"><span>Grand Total</span><span>₹{formatINR(totalPrice)}</span></div>
+            </div>
             <button className={`sn-drawer-checkout-btn-premium ${remaining > 0 ? 'disabled' : ''}`} onClick={onCheckout} disabled={remaining > 0}>{remaining > 0 ? `Add ₹${remaining.toFixed(0)} More` : 'Proceed to Checkout'}</button>
           </div>
         )}
@@ -638,6 +682,8 @@ const Shop = () => {
       <ShopNavbar shopInfo={shopInfo} cartCount={cart.reduce((a, b) => a + b.qty, 0)} onOpenCart={() => setIsCartOpen(true)} onAdminClick={onAdminClick} />
       <HeroBanner shopInfo={shopInfo} totalProducts={categories.reduce((a,c)=>a+c.count, 0)} categories={categories.length} />
       <div className="sn-notice-bar"><Sparkles size={16} /><span>Diwali Sale Live! Factory wholesale rates. Min order ₹1500.</span></div>
+      <OfferBanner products={products} />
+
       <GiftHampersSection giftBoxes={giftBoxes} cart={cart} onUpdateCart={updateCart} categories={categories} onInfoClick={setInfoProduct} />
       <div className="sn-main-layout">
         <CategorySidebar categories={categories} active={activeCategory} onChange={(cat) => { setActiveCategory(cat); window.scrollTo({ top: 400, behavior: 'smooth' }); }} totalCount={categories.reduce((a,c)=>a+c.count,0)} />
