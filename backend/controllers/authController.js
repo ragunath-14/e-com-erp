@@ -24,7 +24,7 @@ exports.login = async (req, res) => {
       return res.status(400).json({ error: 'Username and password are required' });
     }
 
-    if (username === process.env.ADMIN_USERNAME) {
+    if (username.trim() === (process.env.ADMIN_USERNAME || '').trim()) {
       // Always run bcrypt.compare (even on a bad username) so response timing doesn't leak which part was wrong.
       const validPassword = await bcrypt.compare(password, process.env.ADMIN_PASSWORD_HASH);
       if (!validPassword) return res.status(401).json({ error: 'Invalid username or password' });

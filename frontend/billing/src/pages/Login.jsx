@@ -18,7 +18,7 @@ const Login = () => {
     setLoading(true);
     setError('');
     try {
-      const res = await axios.post(`${API_URLS.BASE}/auth/login`, creds);
+      const res = await axios.post(`${API_URLS.BASE}/auth/login`, { ...creds, username: creds.username.trim() });
       setToken(res.data.token);
       navigate('/');
     } catch (err) {
@@ -51,10 +51,13 @@ const Login = () => {
             <div className="input-group">
               <span className="input-group-text bg-light border-0"><User size={18} className="text-muted" /></span>
               <input 
-                type="text" 
-                className="form-control bg-light border-0" 
-                placeholder="Enter username" 
+                type="text"
+                className="form-control bg-light border-0"
+                placeholder="Enter username"
                 required
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
                 value={creds.username}
                 onChange={e => setCreds({ ...creds, username: e.target.value })}
               />
