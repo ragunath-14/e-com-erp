@@ -23,6 +23,21 @@ if (!process.env.JWT_SECRET || !process.env.ADMIN_USERNAME || !process.env.ADMIN
   process.exit(1);
 }
 
+// TEMPORARY diagnostic — prints to this service's own private Logs tab only
+// (never returned to any HTTP client) to debug a live 401 that persists
+// despite the dashboard showing the expected values. No secret value is
+// printed, only lengths/prefixes and a compare against the known test
+// password 'test1234'. Remove this block once the login issue is fixed.
+(() => {
+  const u = process.env.ADMIN_USERNAME || '';
+  const h = process.env.ADMIN_PASSWORD_HASH || '';
+  console.log(`[diag] ADMIN_USERNAME length=${u.length} trimmedEqualsAdmin=${u.trim() === 'admin'} hasSurroundingWhitespace=${u !== u.trim()}`);
+  console.log(`[diag] ADMIN_PASSWORD_HASH length=${h.length} prefix=${JSON.stringify(h.slice(0, 7))}`);
+  require('bcryptjs').compare('test1234', h || 'x')
+    .then(r => console.log(`[diag] hash matches 'test1234': ${r}`))
+    .catch(e => console.log(`[diag] compare error: ${e.message}`));
+})();
+
 const app = express();
 
 // Render (and most PaaS hosts) sit in front of the app behind a single reverse
