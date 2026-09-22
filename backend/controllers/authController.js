@@ -26,7 +26,10 @@ exports.login = async (req, res) => {
 
     if (username.trim() === (process.env.ADMIN_USERNAME || '').trim()) {
       // Always run bcrypt.compare (even on a bad username) so response timing doesn't leak which part was wrong.
-      const validPassword = await bcrypt.compare(password, process.env.ADMIN_PASSWORD_HASH);
+      // .trim() guards against a stray trailing newline/space in the env var itself (easy to
+      // introduce when pasting a hash into a host dashboard's multi-line value box), which
+      // would otherwise silently turn every login attempt into a false negative.
+      const validPassword = await bcrypt.compare(password, (process.env.ADMIN_PASSWORD_HASH || '').trim());
       if (!validPassword) return res.status(401).json({ error: 'Invalid username or password' });
 
       const token = jwt.sign({ sub: username, role: 'admin' }, process.env.JWT_SECRET, { expiresIn: '12h' });
